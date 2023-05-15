@@ -1,31 +1,20 @@
 DOCKER = docker
-VUE_SRC = $(shell find public src)
-WEBOS_SRC = $(shell find app)
-DIST = $(shell find dist)
 
 
-dist:
-	mkdir dist
-
-
-.PHONY: dist/index.html
-dist/index.html:
-	$(MAKE) -C web build
-
-
-build: dist/index.html
+build:
+	$(MAKE) -C watch build
 
 
 image: build
-	${DOCKER} build -t web:latest -f docker/web/Dockerfile .
+	${DOCKER} build -t watch:latest -f docker/watch/Dockerfile .
 
 
 .PHONY: dev
 dev:
-	$(MAKE) -C web dev
+	$(MAKE) -C watch dev
 
 
 .PHONY: clean
 clean:
 	rm -rf dist
-	$(MAKE) -C web clean
+	$(MAKE) -C watch clean
