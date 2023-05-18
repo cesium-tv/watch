@@ -1,0 +1,14 @@
+version: "3.4"
+
+services:
+  watch:
+    image: watch
+    build:
+      dockerfile: ./docker/watch/Dockerfile
+      target: vue
+      context: .
+    volumes:
+      - ./watch:/app:ro
+      - ./docker/watch/entrypoint.sh:/entrypoint.sh:ro
+    ports:
+      - 8002:8002

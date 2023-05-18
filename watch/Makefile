@@ -20,7 +20,7 @@ build: node_modules ../dist/index.html
 
 .PHONY: dev
 dev: node_modules
-	npm run dev
+	npm run serve
 
 
 .PHONY: clean

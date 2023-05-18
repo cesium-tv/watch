@@ -7,7 +7,7 @@ import '@procot/webostv';
 import '@mdi/font/css/materialdesignicons.css';
 import App from "./App.vue";
 import router from "./router";
-import store from './store'
+import store from '@/store'
 
 smoothscroll.polyfill();
 
@@ -55,13 +55,5 @@ new Vue({
 
   render(h) {
     return h(App);
-  },
-
-  beforeCreate() {
-    let token = localStorage.getItem('cesium.tv-token');
-    if (token) {
-      token = JSON.parse(token);
-    }
-    this.$store.dispatch('whoami', token).catch(console.error);
   },
 }).$mount("#app");

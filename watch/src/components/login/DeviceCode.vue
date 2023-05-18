@@ -1,10 +1,16 @@
 <template>
-  <div class="columns">
-    <div class="column is-one-quarter is-offset-one-quarter">
+  <div
+    v-if="authInfo"
+    class="columns"
+  >
+    <div class="column is-two-fifths is-offset-one-fifth">
       <p class="title is-5 mt-6">On your phone or computer</p>
-      <ol class="ml-5">
+      <ol class="ml-5 has-text-light">
         <li>
-          <p>Go to: <b>{{ verifyUrlShort }}</b></p>
+          <p>Go to: <a
+            :href="verifyUrl"
+            target="_new"
+          >{{ verifyUrl }}</a></p>
         </li>
         <li>
           <p>Sign in to your account</p>
@@ -15,7 +21,7 @@
       </ol>
     </div>
     <div class="is-divider-vertical" data-content="OR"></div>
-    <div class="column is-one-quarter has-text-centered">
+    <div class="column is-one-fifth has-text-centered">
       <p class="title is-5 mt-6">Scan the code on your phone:</p>
       <VueQrcode
         :value="verifyUrl"
@@ -28,10 +34,8 @@
 <script>
 import axios from 'axios';
 import VueQrcode from '@chenfengyuan/vue-qrcode';
-import { API_URL, CLIENT_ID, CLIENT_SECRET } from '@/config';
 import utils from '@/utils';
-
-const axios_poll = axios.create();
+import { API_URL, CLIENT_ID } from '@/config';
 
 export default {
   name: 'DeviceCode',
@@ -66,10 +70,6 @@ export default {
 
   computed: {
     verifyUrl() {
-      if (!this.authInfo) {
-        return;
-      }
-
       const urlp = new URL(API_URL);
       return utils.urlJoin(`${urlp.origin}`, this.authInfo.verification_uri, {
         user_code: this.authInfo.user_code
@@ -77,14 +77,10 @@ export default {
     },
 
     verifyUrlShort() {
-      if (!this.authInfo) {
-        return;
-      }
-
       const urlp = new URL(API_URL);
-      return `${urlp.host}${this.authInfo.verification_uri}`;
+      return `http://${urlp.host}${this.authInfo.verification_uri}`;
     },
-},
+  },
 
   methods: {
     isVisible() {
@@ -95,27 +91,14 @@ export default {
       if (!this.isVisible()) {
         return;
       }
-
-      const params = new URLSearchParams();
-      params.append('grant_type', 'urn:ietf:params:oauth:grant-type:device_code');
-      params.append('client_id', CLIENT_ID);
-      params.append('client_secret', CLIENT_SECRET);
-      params.append('device_code', this.authInfo.device_code);
-
-      // Use our private instance to avoid triggering loading component.
-      axios_poll
-        .post(utils.urlJoin(API_URL, '/oauth2/token/'), params)
-        .then(r => {
-          // NOTE: check http status code.
-          this.onLogin(r.data);
+      this.$store
+        .dispatch('device', this.authInfo.device_code)
+        .then(() => {
+          clearInterval(this.interval);
+          this.$router.push('/');
         })
-        .catch(console.error);
+        .catch(() => {})
     },
-
-    onLogin(token) {
-      this.$store.commit('SET_AUTH', token);
-      this.$router.push('/');
-    }
   },
 }
 </script>

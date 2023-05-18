@@ -44,14 +44,29 @@ const router = new Router({
   ]
 });
 
-router.replace({ name: CesiumTheme.default_menu_item});
-
 router.beforeEach((to, from, next) => {
-  if (CesiumTheme.auth_required && !store.isAuthenticated && to.path !== '/login') {
-    next('/login');
+  console.debug('router.beforeEach()');
+
+  if (!CesiumTheme.auth_required) {
+    console.debug('Auth not required')
+    next();
     return;
   }
-  next();
+
+  if (to.path === '/login') {
+    next();
+    return;
+  }
+
+  if (store.getters.isAuthenticated) {
+    console.debug('Authenticated')
+    next();
+  } else {
+    console.debug('Not authenticated')
+    next('/login');
+  }
 });
+
+router.replace({ name: CesiumTheme.default_menu_item});
 
 export default router;
