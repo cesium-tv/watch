@@ -5,12 +5,7 @@
         <Sidebar/>
         <router-view/>
       </section>
-      <Video
-        v-model="video"
-        v-if="video"
-        @play="$errokees.pause()"
-        @stop="$errokees.resume()"
-      />
+      <Video/>
       <Loading/>
     </div>
     <!--<Login v-if="isAuthenticated === false"/>-->
@@ -36,29 +31,14 @@ export default {
     Login,
   },
 
-  data() {
-    return {
-      video: null,
-    };
-  },
-
   computed: {
     ...mapGetters(['isAuthenticated']),
-  },
-
-  mounted() {
-    this.$bus.$on('video:play', video => {
-      this.$bus.$emit('busy');
-      this.video = video;
-    });
-  },
-
-  unmounted() {
-    this.$errokees.disable();
-    this.$errokees = null;
   },
 }
 </script>
 
 <style>
+body {
+/*  cursor: none;*/
+}
 </style>

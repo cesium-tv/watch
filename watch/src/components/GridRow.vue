@@ -1,8 +1,8 @@
 <template>
   <div ref="row">
     <p
-      class="title channel-name is-3 has-text-dark"
-    >{{ category.title }}</p>
+      class="title channel-name is-3 has-text-light"
+    >{{ category.name }}</p>
     <div class="row">
       <GridItem
         v-for="(video, i) in category.videos"
@@ -10,7 +10,6 @@
         :video="video"
       />
       <div
-        v-if="category.videos && category.videos.length > 5"
         class="card errokees-selectable return"
         data-ek-activate-event-name="errokees:activate"
         @errokees:activate="onReturn"

@@ -24,14 +24,18 @@ export default {
 
           if (channels) {
             return channels
-              .filter(c => c.videos)
+              .filter(c => c.n_videos)
               .map(c => {
                 return {
-                  title: c.title,
+                  name: c.name,
                   videos: this.$store.getters.getVideosByChannel(c.uid),
                 }
               });
           }
+          break;
+
+        case 'resume':
+          break;
       }
     }
   },

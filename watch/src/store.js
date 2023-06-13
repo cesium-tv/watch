@@ -48,7 +48,7 @@ const store = new Vuex.Store({
         return [];
       }
       //return state.videos;
-      return state.videos.filter(o => o.channel === channel_uid);
+      return state.videos.filter(o => o.channel.uid === channel_uid);
     },
   },
 

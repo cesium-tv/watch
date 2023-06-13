@@ -1,208 +1,105 @@
 <template>
   <div
     id="container"
-    ref="container"
+    refs="container"
+    :class="{ hide: !visible }"
   >
-    <video
-      autoplay
-      ref="video"
-      :controls="false"
-      :src="source"
-    ></video>
-
-      <Controls
-        v-model="controls"
-        :state="state"
-      >
-        <PlayPause
-          v-model="playPause"
-          :state="state"
-        />
-      </Controls>
-    </div>
+    <Plyr
+      v-model="video"
+      :update-interval="10"
+      @playing="onPlaying"
+      @stopped="onStopped"
+      @timeupdate="onTimeUpdate"
+    >
+      <template v-slot:controls>
+        <div class="plyr__controls">
+          <div class="plyr__controls__item plyr__progress__container">
+            <div class="plyr__progress">
+              <input data-plyr="seek" type="range" min="0" max="100" step="0.01" value="0" aria-label="Seek">
+              <progress class="plyr__progress__buffer" min="0" max="100" value="0">% buffered</progress>
+              <span role="tooltip" class="plyr__tooltip">00:00</span>
+            </div>
+          </div>
+          <div class="plyr__controls__item plyr__time plyr__time--current" aria-label="Current time">00:00</div>
+          <div class="plyr__controls__item plyr__time plyr__time--duration" aria-label="Duration">00:00</div>
+        </div>
+      </template>
+    </Plyr>
+  </div>
 </template>
 
 <script>
 import screenfull from 'screenfull';
-import PlayPause from '@/components/player/PlayPause';
-import Controls from '@/components/player/Controls';
-import { KEYCODE, STATUS } from '@/config';
-
-const CODEGROUPS = {
-  PLAY_PAUSE: [KEYCODE.PAUSE, KEYCODE.SPACE, KEYCODE.ENTER],
-  PLAY: [KEYCODE.PLAY, KEYCODE.PLAY_TV],
-  FFD: [KEYCODE.FFW, KEYCODE.RIGHT],
-  RWD: [KEYCODE.RWD, KEYCODE.LEFT],
-  STOP: [KEYCODE.STOP, KEYCODE.STOP_TV, KEYCODE.BACK, KEYCODE.ESC],
-};
+import Plyr from '@/components/player/Plyr';
+import api from '@/services/api';
 
 export default {
   name: 'Video',
 
   components: {
-    PlayPause,
-    Controls,
-  },
-
-  props: {
-    value: {
-      type: Object,
-      default: null,
-    },
+    Plyr,
   },
 
   data() {
     return {
-      controls: false,
-      playPause: false,
-      state: {
-        status: STATUS.LOADING,
-        seek: 0,
-        time: null,
-        duration: null,
+      video: null,
+      eventHandlers: {
+        screenFull: this.onFullscreen.bind(this),
       },
-      details: null,
-      eventHandlers: {},
     };
-  },
-
-  mounted() {
-    const $video = this.$refs.video;
-
-    this.eventHandlers = {
-      keyDown: this.onKeyDown.bind(this),
-      fullScreen: this.onFullscreen.bind(this),
-    };
-    document.addEventListener('keydown', this.eventHandlers.keyDown);
-    screenfull.on('change', this.eventHandlers.fullScreen);
-
-    $video.addEventListener("timeupdate", (ev) => {
-      this.state.duration = ev.target.duration;
-      const time = ev.target.currentTime;
-      if (this.state.status === STATUS.SEEKING) {
-        if (time < this.state.seek * 1.01 &&
-            time > this.state.seek * -1.01) {
-          this.state.seek = 0;
-          this.state.status = STATUS.PLAYING;
-        } else {
-          return;
-        }
-      }
-      this.state.time = time;
-    });
-
-    $video.addEventListener('play', () => {
-      this.$bus.$emit('idle');
-    });
-
-    $video.addEventListener('stalled', () => {
-      this.$bus.$emit('busy');
-    });
-
-    $video.addEventListener('playing', () => {
-      const status = this.state.status;
-      this.$bus.$emit('idle');
-      this.state.status = STATUS.PLAYING;
-      // NOTE: don't show controls when first playing, or seeking.
-      if (status === STATUS.PAUSED) {
-        this.controls = false;
-        this.playPause = true;
-      }
-    });
-
-    $video.addEventListener('pause', () => {
-      this.state.status = STATUS.PAUSED;
-      this.controls = true;
-      this.playPause = true;
-    });
-
-    this.show();
-  },
-
-  unmounted() {
-    document.removeEventListener('keydown', this.eventHandlers.keyDown);
-    screenfull.off('change', this.eventHandlers.fullScreen);
   },
 
   computed: {
-    source() {
-      if (!this.value) {
-        return;
-      }
-
-      const dimensions = Object.keys(this.value.sources);
-      dimensions.sort();
-
-      return this.value.sources[dimensions[0]].url;
+    visible() {
+      return (this.video);
     },
   },
 
-  methods: {
-    show() {
-      this.$emit('play');
+  mounted() {
+    screenfull.on('change', this.eventHandlers.screenFull);
+
+    // NOTE: whenever another component wants to play a video, it raises this
+    // event with the video details, this is the entry point for playing.
+    this.$bus.$on('video:play', video => {
       screenfull.request(this.$refs.container);
+      this.video = video;
+    });
+  },
+
+  unmounted() {
+    screenfull.off('change', this.eventHandlers.screenFull);
+  },
+
+  methods: {
+    onPlaying(video) {
+      api.post(`/videos/${video.uid}/played/`)
+        .catch(console.error);
     },
 
-    hide() {
-      this.$bus.$emit('idle');
-      this.$emit('stop');
-      this.$emit('input', null);
+    onTimeUpdate(video, time) {
+      const cursor = {
+        current: time,
+        duration: video.duration,
+      };
+      api.post(`/videos/${video.uid}/cursor/`, {
+        cursor,
+      })
+        .catch(console.error);
+      this.video.cursor = cursor;
+    },
 
-      if (screenfull.isFullscreen) {
-        screenfull.exit();
-      }
+    onStopped() {
+      // NOTE: The player informs us when it is done playing, for now we shut
+      // down and emit the global event to indicate playback has completed.
+      // TODO: this is where we will add the queue playing functionality.
+      screenfull.exit();
+      this.video = null;
+      this.$bus.$emit('video:stop');
     },
 
     onFullscreen() {
       if (!screenfull.isFullscreen) {
-        this.hide();
-      }
-    },
-
-    seek(delta) {
-      /*
-      Enter seeking state, and show controls. Seeking state causes the
-      scrubber to display the seek value rather than the time value (
-      the time value jumps around).
-
-      Seeking state is exited once the video element reports currentTime
-      +/- 1% of the requested value, meaning it "caught up" to our seek.
-      */
-      this.state.status = STATUS.SEEKING;
-      this.controls = true;
-      this.state.seek = this.$refs.video.currentTime += delta;
-    },
-
-    onKeyDown(ev) {
-      const $video = this.$refs.video;
-      if (!$video) {
-        return;
-      }
-
-      if (CODEGROUPS.PLAY_PAUSE.indexOf(ev.keyCode) !== -1) {
-        if ($video.paused) {
-          $video.play();
-        } else {
-          $video.pause();
-        }
-      } else if (CODEGROUPS.PLAY.indexOf(ev.keyCode) !== -1) {
-        if ($video.paused) {
-          $video.play();
-        }
-        /*
-          Force controls to display even if we were already playing.
-          This is a nice feature to check your current video time
-          without pausing.
-        */
-        this.controls = true;
-      } else if (CODEGROUPS.FFD.indexOf(ev.keyCode) !== -1) {
-        this.seek(10);
-      } else if (CODEGROUPS.RWD.indexOf(ev.keyCode) !== -1) {
-        this.seek(-10);
-      } else if (CODEGROUPS.STOP.indexOf(ev.keyCode) !== -1) {
-          this.hide();
-      } else {
-        console.log('Unknown keyCode:', ev.keyCode);
+        this.video = null;
       }
     },
   },
@@ -211,24 +108,23 @@ export default {
 
 <style scoped>
 #container {
+  position: absolute;
   width: 100%;
   height: 100%;
-  background-color: black;
-  z-index: 999;
-}
-
-video {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  background-color: black;
+  /* puts this above loading overlay */
+  z-index: 1000;
 }
 
 .hide {
   display: none;
 }
 
-.show {
-  display: block;
+input[type=range] {
+  --plyr-range-fill-background: var(--primary);
+}
+
+.controls__top__row {
+  margin-bottom: 20px;
+  background: none;
 }
 </style>

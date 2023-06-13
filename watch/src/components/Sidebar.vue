@@ -23,11 +23,11 @@
           <div
             v-for="item in menu"
             :key="item.name"
-            @errokees:selected="onMenuSelected"
-            @errokees:deselected="onMenuDeselected"
+            @ek:selected="onMenuSelected"
+            @ek:deselected="onMenuDeselected"
             data-ek-activate-event-name="click"
             data-ek-activate-event-target="a"
-            class="errokees-selectable"
+            class="ek-selectable"
           >
             <b-menu-list>
               <b-menu-item
@@ -136,7 +136,7 @@ export default {
 </script>
 
 <style lang="scss">
-.errokees-selected ul li a {
+.ek-selected ul li a {
   background-color: var(--primary);
   color: var(--white);
 }

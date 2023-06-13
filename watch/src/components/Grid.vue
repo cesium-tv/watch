@@ -28,9 +28,9 @@ export default {
 
   mounted() {
     // Select the first video once our data is rendered.
-    document.arrive('div.video', { onceOnly: true }, (el) => {
-      this.$errokees.select(el);
-    });
+    //document.arrive('div.video', { onceOnly: true }, (el) => {
+    //  this.$ek.select(el);
+    //});
   },
 }
 </script>

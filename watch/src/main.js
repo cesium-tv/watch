@@ -1,53 +1,50 @@
 import Vue from "vue";
 import Errokees from 'errokees';
 import Buefy from 'buefy';
+import * as Sentry from '@sentry/vue';
 import smoothscroll from 'smoothscroll-polyfill';
 import 'arrive';
 import '@procot/webostv';
 import '@mdi/font/css/materialdesignicons.css';
 import App from "./App.vue";
-import router from "./router";
+import router from "@/router";
 import store from '@/store'
 
 smoothscroll.polyfill();
 
-// function handleError() {
-//   let messages = []
-//   for (let i = 0; i < arguments.length; i++) {
-//     messages.push(arguments[i].toString());
-//   }
-//   messages = messages.join('\r\n');
-
-//   document.documentElement.innerHTML =
-//     '<div style="width: 100%; height: 100%; background-color: black;">' +
-//     '<pre style="background-color: black; color: blue;">' + messages + '</pre>' +
-//     '</div>';
-// }
-
-// window.onerror = function(msg, url, line, col, error) {
-//   //console.error(msg, url, line, col, error);
-//   handleError(url, msg, 'Line: ' + line, 'Col: ' + col);
-// }
-
-// window.addEventListener('unhandledrejection', function(event) {
-//   //console.error(event);
-//   handleError(event.promise, event.reason);
-// });
-
 Vue.config.productionTip = false;
 Vue.prototype.$bus = new Vue();
-Vue.prototype.$errokees = new Errokees(null, {
+
+Vue.use(Buefy);
+
+Sentry.init({
+  Vue,
+  dsn: "http://466bcf0d1721484aac3610d3df695041@localhost:9000/3",
+  integrations: [
+    new Sentry.BrowserTracing({
+      // Set `tracePropagationTargets` to control for which URLs distributed tracing should be enabled
+      tracePropagationTargets: ["localhost", /^http:\/\/watch\.cesium\.tv\//],
+      routingInstrumentation: Sentry.vueRouterInstrumentation(router),
+    }),
+  ],
+  // Set tracesSampleRate to 1.0 to capture 100%
+  // of transactions for performance monitoring.
+  // We recommend adjusting this value in production
+  tracesSampleRate: 1.0,
+});
+
+Vue.prototype.$ek = new Errokees({
   origin: 'right',
   scroll: false,
   selectEvent: {
-    name: 'errokees:selected',
+    name: 'ek:selected',
   },
   deselectEvent: {
-    name: 'errokees:deselected',
+    name: 'ek:deselected',
   },
+  elementTypes: [],
+  mouse: false,
 });
-
-Vue.use(Buefy);
 
 new Vue({
   router,

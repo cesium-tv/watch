@@ -9,6 +9,8 @@ services:
       context: .
     volumes:
       - ./watch:/app:ro
+      # Exclude node_modules/ from host.
+      - /app/node_modules/
       - ./docker/watch/entrypoint.sh:/entrypoint.sh:ro
     ports:
       - 8002:8002
