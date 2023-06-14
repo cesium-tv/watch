@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="p-1">
     <Grid
       :categories="categories"
     />
@@ -51,3 +51,9 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.p-1 {
+  padding: 1em;
+}
+</style>

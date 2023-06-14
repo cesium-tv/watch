@@ -27,7 +27,7 @@ const router = new Router({
       component: Search,
     },
     {
-      path: '/settings',
+      path: '/options',
       name: 'settings',
       component: Settings,
     },

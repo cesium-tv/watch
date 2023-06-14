@@ -1,7 +1,5 @@
 <template>
-  <div>
-    <component :is="componentName"/>
-  </div>
+  <component :is="componentName"/>
 </template>
 
 <script>
@@ -30,5 +28,4 @@ export default {
 </script>
 
 <style scoped>
-
 </style>

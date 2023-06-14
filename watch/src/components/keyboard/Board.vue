@@ -5,7 +5,7 @@
         <h2
           id="input"
           class="title has-text-light"
-          :style="`margin: ${KEY_MARGIN}px;`"
+          :style="`margin: ${keyMargin}px;`"
         >{{ value }}</h2>
       </div>
     </slot>
@@ -73,6 +73,10 @@ export default {
       }
 
       return layout;
+    },
+
+    keyMargin() {
+      return KEY_MARGIN;
     },
   },
 

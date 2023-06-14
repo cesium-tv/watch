@@ -9,7 +9,7 @@
       </div>
     </div>
     <div class="columns">
-      <div class="column is-offset-1">
+      <div class="column">
         <GridRow
           :category="results"
         />
@@ -34,8 +34,8 @@ export default {
   data() {
     return{
       results: {
-        name: null,
-        videos: [],
+        name: 'Search Results',
+        videos: null,
       },
       _searchHandle: null,
     };
@@ -43,13 +43,21 @@ export default {
 
   methods: {
     onInput(s) {
+      if (!s) {
+        this.results.videos = null;
+        return;
+      }
+
       clearTimeout(this._searchHandle);
       this._searchHandle = setTimeout(() => {
-        api.post('/search/', {s})
+        api.post('/search/', {s: s.toLowerCase()})
           .then((r) => {
-            this.results.videos = r.data.videos;
+            this.results.videos = r.data.videos.map(v => v.video);
           })
-          .catch(e => console.error(e));
+          .catch(e => {
+            console.error(e);
+            this.results.videos = null;
+          });
       }, 2000);
     },
   },
@@ -57,7 +65,4 @@ export default {
 </script>
 
 <style scoped>
-.keyboard {
-/*  margin-left: 100px;*/
-}
 </style>

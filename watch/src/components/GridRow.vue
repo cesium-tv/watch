@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="category.videos.length"
+    v-if="visible"
     ref="row"
   >
     <p
@@ -50,6 +50,12 @@ export default {
       type: Object,
       default: null
     }
+  },
+
+  computed: {
+    visible() {
+      return this.category.videos && this.category.videos.length;
+    },
   },
 
   methods: {

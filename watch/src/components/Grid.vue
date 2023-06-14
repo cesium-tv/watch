@@ -1,5 +1,5 @@
 <template>
-  <div id="grid">
+  <div>
     <GridRow
       v-for="(category, i) in categories"
       :key="i"
@@ -18,7 +18,6 @@ export default {
     GridRow,
   },
 
-
   props: {
     categories: {
       type: Array,
@@ -36,27 +35,4 @@ export default {
 </script>
 
 <style lang="scss">
-#grid {
-  padding-left: 60px;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  overflow: hidden;
-}
-
-.sidebar-page {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    min-height: 100%;
-    // min-height: 100vh;
-    .sidebar-layout {
-        display: flex;
-        flex-direction: row;
-        min-height: 100%;
-        // min-height: 100vh;
-    }
-}
 </style>
