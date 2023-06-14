@@ -29,10 +29,58 @@ const STATUS = {
   RESUME: 5,
 };
 
+const KEYBOARD_LAYOUT = {
+  // Letters
+/*  0: [
+    '!@QWERTYUIOP\\⌫⌦',
+    ' ⇭ASDFGHJKL:\'"',
+    '⇪ZXCVBNM,./?←→',
+    '    ␣⌧',
+  ],
+  // Numbers
+  1: [
+    '!@#$%^&*()-_=+⌫',
+    ' ⇭0123456789',
+  ],*/
+  0: [
+    'ABCDEFG',
+    'HIJKLMN',
+    'OPQRSTU',
+    'VWXYZ-\'',
+    '␣⌧⇭⌫',
+  ],
+  1: [
+    '123~!@#',
+    '456$%^&',
+    '789*()_',
+    '0+=-`?,',
+    '␣⌧⇭⌫',
+  ]
+};
+
+const LABEL_MAP = {
+  '⇪': 'caps',
+  '⇭': 'num',
+  '␣': 'space',
+  '⌧': 'clear',
+//  '⌫': '<<',
+};
+const CODE_MAP = {
+  '␣': ' ',
+};
+
+const KEY_WIDTH = 40;
+const KEY_MARGIN = 3;
+
 export {
   API_URL,
   CLIENT_ID,
   CLIENT_SECRET,
   KEYCODE,
   STATUS,
+  KEYBOARD_LAYOUT,
+  LABEL_MAP,
+  CODE_MAP,
+  KEY_WIDTH,
+  KEY_MARGIN,
 };

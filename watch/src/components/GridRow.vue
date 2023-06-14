@@ -1,6 +1,10 @@
 <template>
-  <div ref="row">
+  <div
+    v-if="category.videos.length"
+    ref="row"
+  >
     <p
+      v-if="category.name"
       class="title channel-name is-3 has-text-light"
     >{{ category.name }}</p>
     <div class="row">

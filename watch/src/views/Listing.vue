@@ -35,7 +35,12 @@ export default {
           break;
 
         case 'resume':
-          break;
+          return [
+            {
+              name: 'Resume playing',
+              videos: this.$store.getters.getRecentPlays(),
+            }
+          ];
       }
     }
   },
