@@ -4,11 +4,12 @@
     class="card is-shadowless ek-selectable video"
     data-ek-activate-event-name="ek:activate"
     @ek:activate="$bus.$emit('video:play', video)"
-    @ek:selected="scrollTop()"
+    @ek:selected="onSelected"
+    @ek:deselected="onDeselected"
   >
     <div class="card-image">
       <figure>
-        <lazy-image
+        <LazyImage
           class="poster"
           :source="video.poster"
         />
@@ -29,9 +30,12 @@
     </div>
     <div class="card-content">
       <div class="content">
-        <p
+        <component
+          :is="titleElement"
+          ref="title"
           class="title is-4 has-text-light"
-        >{{ video.title }}</p>
+          behavior="alternate"
+        >{{ video.title }}</component>
         <p
           class="duration has-text-light"
         >{{ duration }}</p>
@@ -64,6 +68,12 @@ export default {
     },
   },
 
+  data() {
+    return {
+      selected: false,
+    };
+  },
+
   computed: {
     duration() {
       return moment.duration(this.video.duration, 'seconds').humanize();
@@ -71,7 +81,16 @@ export default {
 
     published() {
       return moment(this.video.published).fromNow();
-    }
+    },
+
+    titleIsOverflowing() {
+      const title = this.$refs.title;
+      return title.offsetWidth < title.scrollWidth;
+    },
+
+    titleElement() {
+      return (this.selected && this.titleIsOverflowing) ? 'marquee' : 'p';
+    },
   },
 
   methods: {
@@ -99,6 +118,15 @@ export default {
         behavior: 'smooth',
         left: (left + (vidWidth / 4)) - (rowWidth / 2),
       });
+    },
+
+    onSelected() {
+      this.scrollTop();
+      this.selected = true;
+    },
+
+    onDeselected() {
+      this.selected = false;
     },
   }
 }
