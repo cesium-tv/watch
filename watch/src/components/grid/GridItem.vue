@@ -86,15 +86,16 @@ export default {
       NOTE: scrollIntoView() is broken on webOS. Also, it is not quite what we
       want since we want the row top vs. the video left.
       */
-      const $vid = this.$refs.card;
-      const row = $vid.parentNode.parentNode;
+      const vid = this.$refs.card;
+      const row = vid.parentNode.parentNode;
       const top = row.offsetTop, rowWidth = row.offsetWidth;
-      const left = $vid.offsetLeft, vidWidth = $vid.offsetWidth;
-      row.parentNode.scrollTo({
+      const left = vid.offsetLeft, vidWidth = vid.offsetWidth;
+      const main = document.querySelector('#main')
+      main.scrollTo({
         behavior: 'smooth',
         top,
       });
-      $vid.parentNode.scrollTo({
+      vid.parentNode.scrollTo({
         behavior: 'smooth',
         left: (left + (vidWidth / 4)) - (rowWidth / 2),
       });
@@ -125,6 +126,8 @@ export default {
 .poster {
   width: 320px;
   min-width: 476;
+  max-height: 256px;
+  object-fit: cover;
 }
 
 .play-button {

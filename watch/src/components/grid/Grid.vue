@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import GridRow from '@/components/GridRow';
+import GridRow from '@/components/grid/GridRow';
 
 export default {
   name: 'Grid',

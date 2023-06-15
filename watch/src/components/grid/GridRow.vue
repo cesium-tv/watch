@@ -6,7 +6,7 @@
     <p
       v-if="category.name"
       class="title channel-name is-3 has-text-light"
-    >{{ category.name }}</p>
+    >{{ category.name }} ({{ category.videos.length }})</p>
     <div class="row">
       <GridItem
         v-for="(video, i) in category.videos"
@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import GridItem from '@/components/GridItem';
+import GridItem from '@/components/grid/GridItem';
 
 export default {
   name: 'GridRow',

@@ -33,14 +33,14 @@
 
 <script>
 const MENU = {
-  options: {
+  settings: {
     icon: "cog",
-    label: "Options",
-    to: "/options",
+    label: "Settings",
+    to: "/settings",
   },
-  subscriptions: {
+  subs: {
     icon: "account-star",
-    label: "Subsciptions",
+    label: "Subs",
     to: "/subscriptions",
   },
   again: {

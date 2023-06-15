@@ -32,20 +32,16 @@
 <script>
 import { mapGetters } from 'vuex';
 import Menu from '@/components/Menu';
-import Grid from '@/components/Grid';
 import Video from '@/components/player/Video';
 import Loading from '@/components/Loading';
-import Login from '@/components/Login';
 
 export default {
   name: 'App',
 
   components: {
     Menu,
-    Grid,
     Video,
     Loading,
-    Login,
   },
 
   data() {

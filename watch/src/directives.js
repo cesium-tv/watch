@@ -23,7 +23,8 @@ export default {
     function createObserver() {
       const options = {
         root: null,
-        threshold: "0"
+        threshold: '0',
+        rootMargin: '100px',
       };
       const observer = new IntersectionObserver(handleIntersect, options);
       observer.observe(el);
