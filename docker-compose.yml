@@ -7,6 +7,8 @@ services:
       dockerfile: ./docker/watch/Dockerfile
       target: vue
       context: .
+    environment:
+      - DEBUG=express:*
     volumes:
       - ./watch:/app:ro
       # Exclude node_modules/ from host.

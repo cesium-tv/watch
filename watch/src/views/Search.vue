@@ -3,17 +3,26 @@
     <section>
     <div class="columns">
       <div
-        class="terms column is-offset-one-fifth is-two-fifths"
+        class="terms column is-one-fifth pl-5 mt-2"
       >
         <div
           v-for="term, i in terms"
           :key=i
-          v-html="term.ngram_highlighted"
-          class="term ek-selectable has-text-light mt-1 pl-2"
-          data-ek-scroll="true"
-          data-ek-activate-event-name="click"
-          @click="onSearch(term.term.ngram)"
         >
+          <button
+            class="ek-selectable button is-small is-rounded has-text-light mt-1 pl-2"
+            data-ek-scroll="true"
+            data-ek-activate-event-name="click"
+            @click="onSearch(term.term.ngram)"
+          >
+            <span class="icon is-small pl-3">
+              <b-icon icon="magnify"></b-icon>
+            </span>
+            <span
+              class="term pl-2"
+              v-html="term.ngram_highlighted"
+            />
+          </button>
         </div>
       </div>
       <div class="column">

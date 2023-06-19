@@ -177,16 +177,4 @@ export default {
   height: 5px;
   background-color: rgba(255, 0, 0, 128);
 }
-
-.ek-selectable {
-  border: solid 2px transparent;
-}
-
-.ek-selected {
-  border: solid 2px var(--primary);
-}
-
-.ek-selected .play-button {
-  display: inline;
-}
 </style>

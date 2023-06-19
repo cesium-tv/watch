@@ -1,9 +1,7 @@
-import axios from 'axios';
 import Vue from 'vue'
 import Vuex from 'vuex'
 import api from '@/services/api';
-import utils from '@/utils';
-import { API_URL, CLIENT_ID, CLIENT_SECRET } from '@/config';
+import { CLIENT_ID, CLIENT_SECRET } from '@/config';
 
 Vue.use(Vuex)
 
@@ -75,7 +73,11 @@ const store = new Vuex.Store({
 
     SET_VIDEOS(state, videos) {
       state.videos = videos;
-    }
+    },
+
+    ADD_VIDEOS(state, videos) {
+      state.videos.push(...videos);
+    },
   },
 
   actions: {
@@ -98,8 +100,8 @@ const store = new Vuex.Store({
       data.append('device_code', device_code);
 
       // Use global private instance to avoid triggering loading component.
-      const r = await axios
-        .post(utils.urlJoin(API_URL, '/oauth2/token/'), data);
+      const r = await api
+        .post('/oauth2/token/', data);
       commit('SET_AUTH', r.data);
     },
 
@@ -111,8 +113,8 @@ const store = new Vuex.Store({
       data.append('refresh_token', state.auth.refresh_token);
 
       // Use global private instance to avoid triggering loading component.
-      const r = await axios
-        .post(utils.urlJoin(API_URL, '/oauth2/token/'), data);
+      const r = await api
+        .post('/oauth2/token/', data);
       commit('SET_AUTH', r.data);
     },
 
@@ -136,10 +138,18 @@ const store = new Vuex.Store({
     },
 
     async updateVideos({ commit }) {
-      let r = await api.get(`/videos/`,
-        { params: { 'count': 1000 }}
-      );
-      commit('SET_VIDEOS', r.data.results );
+      commit('SET_VIDEOS', []);
+      const limit = 1000;
+      let offset = 0;
+
+      while (true) {
+        let r = await api.get(`/videos/`,
+          { params: { limit, offset }}
+        );
+        offset += limit;
+        if (r.data.results.length === 0) break;
+        commit('ADD_VIDEOS', r.data.results );
+      }
     },
 
     async getVideoDetails(_, { video_id }) {

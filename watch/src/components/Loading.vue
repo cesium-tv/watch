@@ -39,22 +39,6 @@ export default {
   mounted() {
     this.$bus.$on('busy', () => this.inc());
     this.$bus.$on('idle', () => this.dec());
-    axios.interceptors.request.use((config) => {
-        this.inc();
-        return config;
-      }, (error) => {
-        this.dec();
-        return Promise.reject(error);
-      });
-
-    // Add a response interceptor
-    axios.interceptors.response.use((response) => {
-        this.dec();
-        return response;
-      }, (error) => {
-        this.dec();
-        return Promise.reject(error);
-      });
   },
 }
 </script>

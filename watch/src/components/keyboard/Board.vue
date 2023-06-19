@@ -1,7 +1,10 @@
 <template>
   <div>
     <slot>
-      <div id="input-wrapper">
+      <div
+        id="input-wrapper"
+        class="mb-3"
+      >
         <h2
           id="input"
           class="title has-text-light"
@@ -12,7 +15,6 @@
     <div
       v-for="row, i of layout"
       :key="i"
-
     >
       <Component
         v-for="key, i of row"

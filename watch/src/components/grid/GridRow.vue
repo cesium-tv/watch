@@ -1,22 +1,24 @@
 <template>
   <div
     v-if="visible"
-    ref="row"
   >
     <p
       v-if="category.name"
       class="title channel-name is-3 has-text-light"
     >{{ category.name }} ({{ category.videos.length }})</p>
-    <div class="row">
+    <div
+      ref="row"
+      class="row"
+    >
       <GridItem
         v-for="(video, i) in category.videos"
         :key="i"
         :video="video"
       />
       <div
-        class="card errokees-selectable return"
-        data-ek-activate-event-name="errokees:activate"
-        @errokees:activate="onReturn"
+        class="card ek-selectable return"
+        data-ek-activate-event-name="ek:activate"
+        @ek:activate="onReturnLeft"
       >
         <div class="card-image">
           <figure class="image is-centered is-vcentered">
@@ -25,7 +27,7 @@
               style="margin-top: 176px"
               icon="arrow-u-left-bottom"
               size="is-large"
-              type="is-dark"
+              type="is-light"
             >
             </b-icon>
           </figure>
@@ -59,9 +61,9 @@ export default {
   },
 
   methods: {
-    onReturn() {
-      const div = this.$refs.row.children[1].firstChild;
-      this.$errokees.select(div);
+    onReturnLeft() {
+      const div = this.$refs.row.firstChild;
+      this.$ek.select(div);
     },
   },
 }
@@ -78,20 +80,5 @@ export default {
   max-width: 72px;
   height: 400px;
   margin: 4px;
-}
-
-.row {
-  display: flex;
-  overflow-x: hidden;
-  overflow-y: hidden;
-  height: 404;
-}
-
-.errokees-selectable {
-  border: solid 2px transparent;
-}
-
-.errokees-selected {
-  border: solid 2px var(--primary);
 }
 </style>

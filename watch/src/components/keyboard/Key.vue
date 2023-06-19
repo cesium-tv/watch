@@ -1,6 +1,7 @@
 <template>
   <button
-    class="ek-selectable button is-light"
+    class="ek-selectable button has-text-light"
+    style="border: none;"
     ref="button"
     @click="onClick"
   ><strong>{{ label }}</strong></button>
