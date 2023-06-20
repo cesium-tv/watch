@@ -10,17 +10,22 @@ dist:
 	mkdir dist
 
 
-../dist/index.html: $(VUE_SRC)
+dist/index.html: $(VUE_SRC)
 	npm run build
-	touch ../dist/index.html
+	touch dist/index.html
 
 
-build: node_modules ../dist/index.html
+build: node_modules dist/index.html
 
 
 .PHONY: dev
 dev: node_modules
-	npm run serve
+	npm run dev
+
+
+.PHONY: preview
+preview:
+	npm run preview
 
 
 .PHONY: clean

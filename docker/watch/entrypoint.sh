@@ -1,4 +1,4 @@
 #!/bin/sh
 
 cd /app
-npm run serve
+npm run dev
