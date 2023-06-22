@@ -34,7 +34,7 @@
 <script>
 import axios from 'axios';
 import VueQrcode from '@chenfengyuan/vue-qrcode';
-import utils from '@/utils';
+import { urlJoin }  from '@/utils';
 import { API_URL, CLIENT_ID } from '@/config';
 
 export default {
@@ -56,7 +56,7 @@ export default {
     params.append('grant_type', 'urn:ietf:params:oauth:grant-type:device_code');
     params.append('client_id', CLIENT_ID);
     axios
-      .post(utils.urlJoin(API_URL, '/oauth2/device/'), params)
+      .post(urlJoin(API_URL, '/oauth2/device/'), params)
       .then(r => {
         this.authInfo = r.data;
         this.interval = setInterval(this.onPoll.bind(this), 6000);

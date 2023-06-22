@@ -1,6 +1,6 @@
 <template>
   <div
-    id="container"
+    id="plyr-container"
     refs="container"
     :class="{ hide: !visible }"
   >
@@ -29,9 +29,7 @@
 </template>
 
 <script>
-import screenfull from 'screenfull';
-import Plyr from '@/components/player/Plyr';
-import api from '@/services/api';
+import Plyr from '@/components/player/Plyr.vue';
 
 export default {
   name: 'Video',
@@ -43,9 +41,6 @@ export default {
   data() {
     return {
       video: null,
-      eventHandlers: {
-        screenFull: this.onFullscreen.bind(this),
-      },
     };
   },
 
@@ -56,24 +51,17 @@ export default {
   },
 
   mounted() {
-    screenfull.on('change', this.eventHandlers.screenFull);
-
     // NOTE: whenever another component wants to play a video, it raises this
     // event with the video details, this is the entry point for playing.
     this.$bus.$on('video:play', video => {
-      screenfull.request(this.$refs.container);
+      this.$ek.pause();
       this.video = video;
     });
   },
 
-  unmounted() {
-    screenfull.off('change', this.eventHandlers.screenFull);
-  },
-
   methods: {
     onPlaying(video) {
-      api.post(`/videos/${video.uid}/played/`)
-        .catch(console.error);
+      this.$store.dispatch('updatePlayed', video);
     },
 
     onTimeUpdate(video, time) {
@@ -81,33 +69,24 @@ export default {
         current: time,
         duration: video.duration,
       };
-      api.post(`/videos/${video.uid}/cursor/`, {
-        cursor,
-      })
-        .catch(console.error);
-      this.video.cursor = cursor;
+      this.$store.dispatch('updateCursor', { video, time });
     },
 
     onStopped() {
       // NOTE: The player informs us when it is done playing, for now we shut
       // down and emit the global event to indicate playback has completed.
       // TODO: this is where we will add the queue playing functionality.
-      screenfull.exit();
       this.video = null;
+      this.$ek.resume();
       this.$bus.$emit('video:stop');
-    },
-
-    onFullscreen() {
-      if (!screenfull.isFullscreen) {
-        this.video = null;
-      }
     },
   },
 }
 </script>
 
 <style scoped>
-#container {
+#plyr-container {
+  background-color: black;
   position: absolute;
   width: 100%;
   height: 100%;

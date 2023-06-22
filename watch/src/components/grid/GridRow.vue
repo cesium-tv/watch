@@ -5,13 +5,13 @@
     <p
       v-if="category.name"
       class="title channel-name is-3 has-text-light"
-    >{{ category.name }} ({{ category.videos.length }})</p>
+    >{{ category.name }} ({{ videos.length }})</p>
     <div
       ref="row"
       class="row"
     >
       <GridItem
-        v-for="(video, i) in category.videos"
+        v-for="(video, i) in videos"
         :key="i"
         :video="video"
       />
@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import GridItem from '@/components/grid/GridItem';
+import GridItem from '@/components/grid/GridItem.vue';
 
 export default {
   name: 'GridRow',
@@ -56,7 +56,15 @@ export default {
 
   computed: {
     visible() {
-      return this.category.videos && this.category.videos.length;
+      return this.videos.length;
+    },
+
+    videos() {
+      if (!this.category) return [];
+      if (this.category.videos) return this.category.videos;
+
+      return this.$store.getters
+        .getVideosByChannel(this.category.uid);
     },
   },
 
@@ -80,5 +88,24 @@ export default {
   max-width: 72px;
   height: 400px;
   margin: 4px;
+}
+
+.row {
+  display: flex;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  height: 404px;
+}
+
+.ek-selectable {
+  border: solid 2px transparent;
+}
+
+.ek-selected {
+  border: solid 2px var(--primary);
+}
+
+.ek-selected .play-button {
+  display: inline;
 }
 </style>

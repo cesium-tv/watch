@@ -153,7 +153,7 @@ export default {
 
 .poster {
   width: 320px;
-  min-width: 476;
+  min-width: 476px;
   max-height: 256px;
   object-fit: cover;
 }
@@ -169,12 +169,24 @@ export default {
 .played-container {
   position: relative;
   height: 5px;
-  bottom: 5px;
+  bottom: 12px;
   z-index: 10;
 }
 
 .played {
   height: 5px;
   background-color: rgba(255, 0, 0, 128);
+}
+
+.ek-selectable {
+  border: solid 2px transparent;
+}
+
+.ek-selected {
+  border: solid 2px var(--primary);
+}
+
+.ek-selected .play-button {
+  display: inline;
 }
 </style>

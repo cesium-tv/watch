@@ -46,7 +46,11 @@ const store = new Vuex.Store({
         return [];
       }
       //return state.videos;
-      return state.videos.filter(o => o.channel.uid === channel_uid);
+      return state.videos.filter(o => o.channel.uid === channel_uid && o.is_played === false);
+    },
+
+    getPlayedVideos: (state) => {
+      return state.videos.filter(o => o.is_played === true)
     },
   },
 
@@ -72,12 +76,44 @@ const store = new Vuex.Store({
     },
 
     SET_VIDEOS(state, videos) {
+      for (const video of videos) {
+        const played = localStorage.getItem(`played-${video.uid}`);
+        const cursor = localStorage.getItem(`cursor-${video.uid}`);
+        if (cursor) {
+          video.cursor = JSON.parse(cursor);
+        }
+        video.is_played = (played === 'true') ? true : video.is_played;
+      }
       state.videos = videos;
     },
 
     ADD_VIDEOS(state, videos) {
+      for (const video of videos) {
+        const played = localStorage.getItem(`played-${video.uid}`);
+        const cursor = localStorage.getItem(`cursor-${video.uid}`);
+        if (cursor) {
+          video.cursor = JSON.parse(cursor);
+        }
+        video.is_played = (played === 'true') ? true : video.is_played;
+      }
       state.videos.push(...videos);
     },
+
+    SET_PLAYED(state, video) {
+      const v = state.videos.find(v => v.uid === video.uid);
+      if (v) {
+        v.is_played = true;
+        localStorage.setItem(`played-${video.uid}`, 'true');
+      }
+    },
+
+    SET_CURSOR(state, { video, cursor }) {
+      const v = state.videos.find(v => v.uid === video.uid);
+      if (v) {
+        v.cursor = cursor;
+        localStorage.setItem(`cursor-${video.uid}`, JSON.stringify(cursor));
+      }
+    }
   },
 
   actions: {
@@ -105,7 +141,9 @@ const store = new Vuex.Store({
       commit('SET_AUTH', r.data);
     },
 
-    async refresh({ state, commit }) {
+    async refresh({ state, getters, commit }) {
+      if (!getters.isAuthenticated) return;
+
       const data = new URLSearchParams();
       data.append('grant_type', 'refresh_token');
       data.append('client_id', CLIENT_ID);
@@ -146,16 +184,36 @@ const store = new Vuex.Store({
         let r = await api.get(`/videos/`,
           { params: { limit, offset }}
         );
-        offset += limit;
-        if (r.data.results.length === 0) break;
         commit('ADD_VIDEOS', r.data.results );
+        if (r.data.results.length < limit) break;
+        offset += limit;
       }
     },
 
     async getVideoDetails(_, { video_id }) {
       let r = await api.get(`/videos/${video_id}/`);
       return r.data;
-    }
+    },
+
+    async updatePlayed({ commit, getters }, video) {
+      commit('SET_PLAYED', video);
+      if (getters.isAuthenticated) {
+        await api.post(`/videos/${video.uid}/played/`);
+      }
+    },
+
+    async updateCursor({ commit, getters }, { video, time }) {
+      const cursor = {
+        current: time,
+        duration: video.duration,
+      };
+      commit('SET_CURSOR', { video, cursor });
+      if (getters.isAuthenticated) {
+        await api.post(`/videos/${video.uid}/cursor/`, {
+          cursor,
+        });
+      }
+    },
   },
 });
 

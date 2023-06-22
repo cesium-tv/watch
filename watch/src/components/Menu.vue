@@ -2,8 +2,8 @@
     <div class="p-1">
       <div class="logo">
         <img
-          id="logo"
           alt="Video player"
+          :src="logo"
         />
       </div>
       <b-menu
@@ -32,6 +32,9 @@
 </template>
 
 <script>
+import { API_URL } from '@/config';
+import { urlJoin } from '@/utils';
+
 const MENU = {
   settings: {
     icon: "cog",
@@ -96,7 +99,11 @@ export default {
       });
 
       return menu;
-    }
+    },
+
+    logo() {
+      return urlJoin(API_URL, window.CesiumTheme.logo, { replace: true });
+    },
   },
 };
 </script>
@@ -104,7 +111,7 @@ export default {
 <style lang="scss">
 .ek-selected ul li a {
   background-color: var(--primary);
-  color: var(--white);
+  color: var(--scheme-main);
 }
 
 .logo {

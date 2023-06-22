@@ -34,7 +34,7 @@
 </template>
 
 <script>
-import GridRow from '@/components/grid/GridRow';
+import GridRow from '@/components/grid/GridRow.vue';
 
 export default {
   name: 'Grid',
@@ -79,23 +79,5 @@ export default {
 }
 </script>
 
-<style lang="scss">
-.row {
-  display: flex;
-  overflow-x: hidden;
-  overflow-y: hidden;
-  height: 404;
-}
-
-.ek-selectable {
-  border: solid 2px transparent;
-}
-
-.ek-selected {
-  border: solid 2px var(--primary);
-}
-
-.ek-selected .play-button {
-  display: inline;
-}
+<style lang="scss" scoped>
 </style>

@@ -2,7 +2,7 @@ const API_URL = 'http://cesium.tv:8000/api/v1/';
 const CLIENT_ID = '19bbc55f-0f6f-4fca-95bc-f86286db43da';
 const CLIENT_SECRET = '50ec237f-20b0-4a47-8a25-b329f6d53beb';
 
-const KEYCODE = {
+const KEYCODES = {
   BACK: 461,
   ESC: 27,
   PLAY: 179,
@@ -70,17 +70,20 @@ const CODE_MAP = {
 };
 
 const KEY_WIDTH = 40;
-const KEY_MARGIN = 3;
+const KEY_MARGIN = 0;
+
+const SENTRY_DSN = "http://466bcf0d1721484aac3610d3df695041@cesium.tv:9000/3";
 
 export {
   API_URL,
   CLIENT_ID,
   CLIENT_SECRET,
-  KEYCODE,
+  KEYCODES,
   STATUS,
   KEYBOARD_LAYOUT,
   LABEL_MAP,
   CODE_MAP,
   KEY_WIDTH,
   KEY_MARGIN,
+  SENTRY_DSN,
 };

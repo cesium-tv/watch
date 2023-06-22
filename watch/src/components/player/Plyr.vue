@@ -5,15 +5,17 @@
 </template>
 
 <script>
+import Plyr from 'plyr';
+import Hls from 'hls.js';
 import Vue from 'vue';
-import { KEYCODE } from '@/config';
+import { KEYCODES } from '@/config';
 
-const KEYCODES = {
-  PLAY_PAUSE: [KEYCODE.PAUSE, KEYCODE.SPACE, KEYCODE.ENTER],
-  PLAY: [KEYCODE.PLAY, KEYCODE.PLAY_TV],
-  FFD: [KEYCODE.FFW, KEYCODE.RIGHT],
-  RWD: [KEYCODE.RWD, KEYCODE.LEFT],
-  STOP: [KEYCODE.STOP, KEYCODE.STOP_TV, KEYCODE.BACK, KEYCODE.ESC],
+const CONTROLS = {
+  PLAY_PAUSE: [KEYCODES.PAUSE, KEYCODES.SPACE, KEYCODES.ENTER],
+  PLAY: [KEYCODES.PLAY, KEYCODES.PLAY_TV],
+  FFD: [KEYCODES.FFW, KEYCODES.RIGHT],
+  RWD: [KEYCODES.RWD, KEYCODES.LEFT],
+  STOP: [KEYCODES.STOP, KEYCODES.STOP_TV, KEYCODES.BACK, KEYCODES.ESC],
 };
 
 export default {
@@ -50,14 +52,20 @@ export default {
       },
       hideControls: false,
       autoplay: false,
+      keyboard: {
+        focused: false,
+        global: false,
+      },
     });
     this.player.on('play', () => {
+      console.debug('Played');
       const video = Object.assign({}, this.value);
       if (!video) return;
       this.player.toggleControls(false);
       this.$emit('playing', video);
     });
     this.player.on('pause', () => {
+      console.debug('Paused');
       const video = Object.assign({}, this.value);
       if (!video) return;
       this.$emit('pause', video);
@@ -81,12 +89,12 @@ export default {
   },
 
   beforeUnmount() {
-    try {
+/*    try {
       this.player.destroy();
     } catch (e) {
       console.error(e);
     }
-    this.player = null;
+    this.player = null;*/
   },
 
   unmount() {
@@ -172,17 +180,21 @@ export default {
       }
       this._lastUpdateTime = 0;
 
-      if (!this.value.cursor || !this.value.cursor.current) {
+      const play = () => {
         this.player.play();
+      };
+
+      if (!this.value.cursor || !this.value.cursor.current) {
+        play();
 
       } else {
         // NOTE: I think this event fires multiple times, however, currentTime
         // can only be set once duration is set.
         const setTime = () => {
           if (this.player.duration) {
-            this.player.currentTime = this.value.cursor.current;
-            this.player.play();
             this.player.off('canplay', setTime);
+            this.player.currentTime = this.value.cursor.current;
+            play();
           }
         };
         this.player.on('canplay', setTime);
@@ -198,28 +210,34 @@ export default {
     },
 
     stop() {
+      console.debug('Stopping');
       this.player.stop();
       this.$emit('stopped');
     },
 
     pause() {
+      console.debug('Pausing');
       this.player.pause();
     },
 
     resume() {
+      console.debug('Resuming');
       this.player.play();
     },
 
     toggle() {
+      console.debug('Toggling play state');
       this.player.togglePlay();
     },
 
     ffd(seekTime=null) {
+      console.debug('Seeing forward');
       this.player.forward(seekTime);
       this.flashControls();
     },
 
     rwd(seekTime=null) {
+      console.debug('Seeking reverse');
       this.player.rewind(seekTime)
       this.flashControls();
     },
@@ -229,19 +247,19 @@ export default {
     },
 
     onKey(ev) {
-      if (!this.player.playing) return;
-
-      if (KEYCODES.STOP.includes(ev.keyCode)) {
+      if (CONTROLS.STOP.includes(ev.keyCode)) {
         this.stop();
-      } else if (KEYCODES.PLAY) {
+      } else if (CONTROLS.PLAY.includes(ev.keyCode)) {
         this.resume();
-      } else if (KEYCODES.PLAY_PAUSE) {
+      } else if (CONTROLS.PLAY_PAUSE.includes(ev.keyCode)) {
         this.toggle();
-      } else if (KEYCODES.FFD.includes(ev.keyCode)) {
+      } else if (CONTROLS.FFD.includes(ev.keyCode)) {
         this.ffd();
-      } else if (KEYCODES.RWD.includes(ev.keyCode)) {
+      } else if (CONTROLS.RWD.includes(ev.keyCode)) {
         this.rwd();
       }
+
+      ev.preventDefault();
     },
   },
 }

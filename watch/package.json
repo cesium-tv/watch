@@ -1,45 +1,35 @@
 {
   "name": "cesium.tv",
   "private": true,
-  "description": "LG WebOS video player",
-  "author": "Ben Timby <btimby@gmail.com>",
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "build": "vue-cli-service build",
-    "serve": "vue-cli-service serve"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
-  "main": "index.js",
   "dependencies": {
     "@chenfengyuan/vue-qrcode": "^1.0.2",
-    "@creativebulma/bulma-divider": "^1.1.0",
-    "@mdi/font": "^6.9.96",
+    "@mdi/font": "^7.2.96",
     "@procot/webostv": "^1.2.5",
-    "@sentry/vue": "^7.54.0",
+    "@sentry/vite-plugin": "^2.3.0",
+    "@sentry/vue": "^7.56.0",
+    "@vitejs/plugin-legacy": "^4.0.4",
+    "@vitejs/plugin-vue2": "^2.2.0",
     "arrive": "^2.4.1",
-    "axios": "^0.27.2",
-    "buefy": "^0.9.21",
+    "axios": "^1.4.0",
+    "buefy": "^0.9.23",
     "bulma": "^0.9.4",
-    "core-js": "^3.6.5",
-    "debug": "^4.3.2",
-    "errokees": "^0.4.2",
+    "debug": "^4.3.4",
+    "errokees": "^0.4.3",
+    "hls.js": "^1.4.6",
     "moment": "^2.29.4",
     "plyr": "^3.7.8",
-    "sass": "^1.53.0",
-    "screenfull": "^6.0.2",
     "smoothscroll-polyfill": "^0.4.4",
     "vue": "^2.7.14",
-    "vue-router": "^3.0.3",
     "vuex": "^3.0.1"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "~4.5.15",
-    "@vue/cli-service": "^3.7.0",
-    "sass-loader": "^10.3.1",
-    "vue-template-compiler": "^2.5.21",
-    "webpack": "^4.46.0"
-  },
-  "displayName": "Cesium",
-  "license": "MIT",
-  "browsers": [
-    "chrome 53"
-  ]
+    "vite": "^4.3.9"
+  }
 }

@@ -1,10 +1,10 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import Subscriptions from '@/views/Subscriptions';
-import Search from '@/views/Search';
-import Settings from '@/views/Settings';
-import Login from '@/views/Login';
-import Listing from '@/views/Listing';
+import Subscriptions from '@/views/Subscriptions.vue';
+import Search from '@/views/Search.vue';
+import Settings from '@/views/Settings.vue';
+import Login from '@/views/Login.vue';
+import Listing from '@/views/Listing.vue';
 import store from './store';
 
 Vue.use(Router)
@@ -38,7 +38,7 @@ const router = new Router({
     },
     {
       path: '/resume',
-      name: 'Resume',
+      name: 'resume',
       component: Listing,
     },
   ]
