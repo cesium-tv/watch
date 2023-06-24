@@ -3,19 +3,20 @@
     v-if="visible"
   >
     <p
-      v-if="category.name"
+      v-if="name"
       class="title channel-name is-3 has-text-light"
-    >{{ category.name }} ({{ videos.length }})</p>
-    <div
-      ref="row"
-      class="row"
-    >
+    >{{ name }} ({{ items.length }})</p>
+    <div class="row">
       <GridItem
-        v-for="(video, i) in videos"
+        v-for="(item, i) in items"
         :key="i"
-        :video="video"
+        :item="item"
+        :auto-select="autoSelect && i === 0"
+        :data-index="i"
+        ref="items"
       />
       <div
+        v-if="returnVisible"
         class="card ek-selectable return"
         data-ek-activate-event-name="ek:activate"
         @ek:activate="onReturnLeft"
@@ -48,30 +49,34 @@ export default {
   },
 
   props: {
-    category: {
-      type: Object,
+    name: {
+      type: String,
       default: null
+    },
+    items: {
+      type: Array,
+      default: [],
+    },
+    autoSelect: {
+      type: Boolean,
+      default: false,
     }
   },
 
   computed: {
     visible() {
-      return this.videos.length;
+      return Boolean(this.items.length);
     },
 
-    videos() {
-      if (!this.category) return [];
-      if (this.category.videos) return this.category.videos;
-
-      return this.$store.getters
-        .getVideosByChannel(this.category.uid);
+    returnVisible() {
+      return this.items.length >= 5;
     },
   },
 
   methods: {
     onReturnLeft() {
-      const div = this.$refs.row.firstChild;
-      this.$ek.select(div);
+      const div = this.$refs.items.find(o => o.$attrs['data-index'] === 0).$el;
+      this.$emit('scrollTo', div);
     },
   },
 }

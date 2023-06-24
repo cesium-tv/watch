@@ -1,9 +1,9 @@
 <template>
   <div
     ref="card"
-    class="card is-shadowless ek-selectable video"
+    :class="[{ 'ek-autoselect': autoSelect }, 'card', 'is-shadowless', 'ek-selectable', 'video' ]"
     data-ek-activate-event-name="ek:activate"
-    @ek:activate="$bus.$emit('video:play', video)"
+    @ek:activate="onActivated"
     @ek:selected="onSelected"
     @ek:deselected="onDeselected"
   >
@@ -11,7 +11,10 @@
       <figure>
         <LazyImage
           class="poster"
-          :source="video.poster"
+          :source="item.poster"
+          :alt="item.title"
+          width="476"
+          height="256"
         />
         <b-button
           icon-left="play"
@@ -35,7 +38,7 @@
           ref="title"
           class="title is-4 has-text-light"
           behavior="alternate"
-        >{{ video.title }}</component>
+        >{{ item.title }}</component>
         <p
           class="duration has-text-light"
         >{{ duration }}</p>
@@ -59,13 +62,17 @@ export default {
   },
 
   props: {
-    video: {
+    item: {
       type: Object,
       default: {
         name: null,
         previewPath: null,
       },
     },
+    autoSelect: {
+      type: Boolean,
+      default: false,
+    }
   },
 
   data() {
@@ -76,11 +83,11 @@ export default {
 
   computed: {
     duration() {
-      return moment.duration(this.video.duration, 'seconds').humanize();
+      return moment.duration(this.item.duration, 'seconds').humanize();
     },
 
     published() {
-      return moment(this.video.published).fromNow();
+      return moment(this.item.published).fromNow();
     },
 
     titleIsOverflowing() {
@@ -95,7 +102,7 @@ export default {
 
   methods: {
     percentPlayed() {
-      const cursor = this.video.cursor;
+      const cursor = this.item.cursor;
       if (!cursor || !cursor.current) return 0;
       return cursor.current / cursor.duration * 100;
     },
@@ -118,6 +125,10 @@ export default {
         behavior: 'smooth',
         left: (left + (vidWidth / 4)) - (rowWidth / 2),
       });
+    },
+
+    onActivated() {
+      this.$store.dispatch('playing/play', this.item);
     },
 
     onSelected() {

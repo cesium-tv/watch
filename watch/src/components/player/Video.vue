@@ -5,7 +5,7 @@
     :class="{ hide: !visible }"
   >
     <Plyr
-      v-model="video"
+      :source="source"
       :update-interval="10"
       @playing="onPlaying"
       @stopped="onStopped"
@@ -29,7 +29,10 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
 import Plyr from '@/components/player/Plyr.vue';
+import { dateDiff } from '@/utils';
+import { CURSOR_UPDATE_INTERVAL } from '@/config';
 
 export default {
   name: 'Video',
@@ -38,47 +41,78 @@ export default {
     Plyr,
   },
 
+  computed: {
+    ...mapGetters({
+      video: 'playing/playing',
+    }),
+
+    visible() {
+      return Boolean(this.video);
+    },
+  },
+
   data() {
     return {
-      video: null,
+      source: null,
+      _lastCursorUpdate: 0,
     };
   },
 
-  computed: {
-    visible() {
-      return (this.video);
-    },
-  },
+  watch: {
+    async video(value) {
+      if (!value) {
+        this.source = null;
+        this.$ek.resume();
+        return
+      }
 
-  mounted() {
-    // NOTE: whenever another component wants to play a video, it raises this
-    // event with the video details, this is the entry point for playing.
-    this.$bus.$on('video:play', video => {
       this.$ek.pause();
-      this.video = video;
-    });
+
+      const sources = await this.$store.dispatch('videos/getVideoSources', value.uid);
+      const dimensions = Object.keys(sources);
+      dimensions.sort();
+      const bestSource = sources[dimensions[0]];
+
+      this.source = {
+        video: value,
+        source: {
+          src: bestSource.url,
+          type: bestSource.mime,
+          size: bestSource.height,
+        },
+        sources: sources,
+      };
+    }
   },
 
   methods: {
-    onPlaying(video) {
-      this.$store.dispatch('updatePlayed', video);
+    onPlaying() {
+      if (!this.video) {
+        return;
+      }
+
+      this.$store.dispatch('videos/updatePlayed', this.video);
     },
 
-    onTimeUpdate(video, time) {
-      const cursor = {
-        current: time,
-        duration: video.duration,
-      };
-      this.$store.dispatch('updateCursor', { video, time });
+    onTimeUpdate(time) {
+      if (!this.video) {
+        return;
+      }
+
+      if (!dateDiff(this._lastCursorUpdate * 1000, {
+        d2: time * 1000,
+        seconds: CURSOR_UPDATE_INTERVAL,
+      })) {
+        return;
+      }
+
+      this.$store.dispatch('videos/updateCursor', { video: this.video, time });
+      this._lastCursorUpdate = time;
     },
 
     onStopped() {
-      // NOTE: The player informs us when it is done playing, for now we shut
-      // down and emit the global event to indicate playback has completed.
       // TODO: this is where we will add the queue playing functionality.
-      this.video = null;
-      this.$ek.resume();
-      this.$bus.$emit('video:stop');
+      this.$store.dispatch('playing/stop');
     },
   },
 }

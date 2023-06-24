@@ -1,13 +1,14 @@
 <template>
   <img
     v-lazyload
-    class="image-item"
+    :style="`width: ${width}px; height: ${height}px; background-image: url(${imgLoading});`"
     :data-url="source"
     :alt="alt"
   >
 </template>
 
 <script>
+import imgLoading from '@/assets/img-loading.png';
 import LazyLoadDirective from '@/directives';
 
 export default {
@@ -15,6 +16,12 @@ export default {
 
   directives: {
     lazyload: LazyLoadDirective,
+  },
+
+  data() {
+    return {
+      imgLoading,
+    };
   },
 
   props: {
@@ -25,10 +32,21 @@ export default {
     alt: {
       type: String,
       default: 'Image',
-    }
+    },
+    width: {
+      type: Number,
+      default: 0,
+    },
+    height: {
+      type: Number,
+      default: 0,
+    },
   },
 }
 </script>
 
 <style scoped>
+img {
+  object-fit: contain;
+}
 </style>

@@ -8,26 +8,14 @@
 import Plyr from 'plyr';
 import Hls from 'hls.js';
 import Vue from 'vue';
-import { KEYCODES } from '@/config';
-
-const CONTROLS = {
-  PLAY_PAUSE: [KEYCODES.PAUSE, KEYCODES.SPACE, KEYCODES.ENTER],
-  PLAY: [KEYCODES.PLAY, KEYCODES.PLAY_TV],
-  FFD: [KEYCODES.FFW, KEYCODES.RIGHT],
-  RWD: [KEYCODES.RWD, KEYCODES.LEFT],
-  STOP: [KEYCODES.STOP, KEYCODES.STOP_TV, KEYCODES.BACK, KEYCODES.ESC],
-};
+import { CONTROLS } from '@/config';
 
 export default {
   name: 'Plyr',
 
   props: {
-    value: {
+    source: {
       type: Object,
-    },
-    updateInterval: {
-      type: Number,
-      default: 1.0
     },
   },
 
@@ -38,13 +26,10 @@ export default {
         keyDown: this.onKey.bind(this),
       },
       _controlFlash: null,
-      _lastUpdateTime: 0,
     };
   },
 
   mounted() {
-    document.addEventListener('keydown', this.eventHandlers.keyDown);
-
     this.player = new Plyr(this.$refs.video, {
       controls: this.defineControls,
       fullscreen: {
@@ -59,26 +44,15 @@ export default {
     });
     this.player.on('play', () => {
       console.debug('Played');
-      const video = Object.assign({}, this.value);
-      if (!video) return;
       this.player.toggleControls(false);
-      this.$emit('playing', video);
+      this.$emit('playing');
     });
     this.player.on('pause', () => {
       console.debug('Paused');
-      const video = Object.assign({}, this.value);
-      if (!video) return;
-      this.$emit('pause', video);
+      this.$emit('pause');
     });
     this.player.on('timeupdate', p => {
-      const video = Object.assign({}, this.value);
-      const time = this.player.currentTime;
-      if (!video) return;
-      if (this._lastUpdateTime && time - this._lastUpdateTime < this.updateInterval) {
-        return;
-      }
-      this._lastUpdateTime = time;
-      this.$emit('timeupdate', video, time);
+      this.$emit('timeupdate', this.player.currentTime);
     });
     this.player.on('ended', this.onEnd);
     // If a source is set, play it, we also react if our value is changed
@@ -88,43 +62,9 @@ export default {
     }
   },
 
-  beforeUnmount() {
-/*    try {
-      this.player.destroy();
-    } catch (e) {
-      console.error(e);
-    }
-    this.player = null;*/
-  },
-
-  unmount() {
-    document.removeEventListener('keydown', this.eventHandlers.keyDown);
-  },
-
   computed: {
-    source() {
-      if (!this.value) {
-        return;
-      }
-
-      const dimensions = Object.keys(this.value.sources);
-      dimensions.sort();
-      const bestSource = this.value.sources[dimensions[0]];
-      return {
-        type: 'video',
-        title: this.value.title,
-        sources: [
-          {
-            src: bestSource.url,
-            type: bestSource.mime,
-            size: bestSource.height,
-          },
-        ],
-      };
-    },
-
     visible() {
-      return (this.source);
+      return Boolean(this.source);
     },
 
     isSourceHls() {
@@ -132,18 +72,21 @@ export default {
         return false;
       }
 
-      const urlp = new URL(this.source.sources[0].src);
+      const urlp = new URL(this.source.source.src);
       return urlp.pathname.toLowerCase().endsWith('.m3u8');
     },
   },
 
   watch: {
-    source(source) {
-      if (source) {
-        this.start(source);
-      } else {
+    source(value) {
+      if (!value) {
         this.stop();
+        document.removeEventListener('keydown', this.eventHandlers.keyDown);
+        return;
       }
+
+      document.addEventListener('keydown', this.eventHandlers.keyDown);
+      this.start(value);
     },
   },
 
@@ -166,6 +109,7 @@ export default {
 
     start(source) {
       console.log('Playing source:', source);
+      const video = source.video;
 
       if (this.isSourceHls) {
         if (!Hls.isSupported()) {
@@ -173,18 +117,26 @@ export default {
         }
 
         const hls = new Hls();
-        hls.loadSource(source.sources[0].src);
+        hls.loadSource(source.source.src);
         hls.attachMedia(this.$refs.video);
+
       } else {
-        this.player.source = source;
+        this.player.source = {
+          type: 'video',
+          title: video.title,
+          sources: [
+            source.source,
+          ],
+          poster: video.poster,
+        };
+
       }
-      this._lastUpdateTime = 0;
 
       const play = () => {
         this.player.play();
       };
 
-      if (!this.value.cursor || !this.value.cursor.current) {
+      if (!video.cursor || !video.cursor.current) {
         play();
 
       } else {
@@ -193,7 +145,7 @@ export default {
         const setTime = () => {
           if (this.player.duration) {
             this.player.off('canplay', setTime);
-            this.player.currentTime = this.value.cursor.current;
+            this.player.currentTime = video.cursor.current;
             play();
           }
         };
@@ -247,15 +199,15 @@ export default {
     },
 
     onKey(ev) {
-      if (CONTROLS.STOP.includes(ev.keyCode)) {
+      if (ev.keyCode in CONTROLS.STOP) {
         this.stop();
-      } else if (CONTROLS.PLAY.includes(ev.keyCode)) {
+      } else if (ev.keyCode in CONTROLS.PLAY) {
         this.resume();
-      } else if (CONTROLS.PLAY_PAUSE.includes(ev.keyCode)) {
+      } else if (ev.keyCode in CONTROLS.PLAY_PAUSE) {
         this.toggle();
-      } else if (CONTROLS.FFD.includes(ev.keyCode)) {
+      } else if (ev.keyCode in CONTROLS.FFD) {
         this.ffd();
-      } else if (CONTROLS.RWD.includes(ev.keyCode)) {
+      } else if (ev.keyCode in CONTROLS.RWD) {
         this.rwd();
       }
 

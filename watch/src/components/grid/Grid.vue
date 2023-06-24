@@ -1,21 +1,24 @@
 <template>
-  <div
-    ref="rows"
-  >
+  <div>
     <GridRow
       v-for="(category, i) in categories"
       :key="i"
-      :category="category"
+      :name="category.name"
+      :items="category.videos"
+      :auto-select="i === 0"
+      :data-index="i"
+      ref="rows"
+      @scrollTo="scrollToAndSelect"
     />
     <div
-      v-if="visible"
+      v-if="returnVisible"
       class="row"
     >
       <div
         class="card is-shadowless ek-selectable return"
         style="height: 68px; width: 480px;"
         data-ek-activate-event-name="ek:activate"
-        @ek:activate="onReturnTop"
+        @ek:activate="onReturnToTop"
       >
         <div class="card-image">
           <figure class="image is-centered is-vcentered">
@@ -51,33 +54,34 @@ export default {
   },
 
   computed: {
-    visible() {
-      if (!this.categories) return false;
-
-      let categoriesWithVideos = 0;
-      for (const category of this.categories) {
-        if (category.videos && category.videos.length) categoriesWithVideos++;
-      }
-      return categoriesWithVideos > 2;
+    returnVisible() {
+      return (this.categories && this.categories.length >= 3);
     },
   },
 
-  mounted() {
-    // Select the first video once our data is rendered.
-    //document.arrive('div.video', { onceOnly: true }, (el) => {
-    //  this.$ek.select(el);
-    //});
-  },
-
   methods: {
-    onReturnTop() {
-      const div = this.$refs.rows.firstChild.children[1].firstChild;
-      console.log(div);
-      this.$ek.select(div);
+    onReturnToTop() {
+      const row = this.$refs.rows.find(o => o.$attrs['data-index'] === 0).$el;
+      const div = row.children[1].firstChild;
+      this.scrollToAndSelect(div);
+    },
+
+    scrollToAndSelect(div) {
+      div.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+      this.$ek.addEventListener('updated', () => {
+        this.$ek.select(div);
+      }, { once: true });
     },
   },
 }
 </script>
 
 <style lang="scss" scoped>
+.ek-selectable {
+  border: solid 2px transparent;
+}
+
+.ek-selected {
+  border: solid 2px var(--primary);
+}
 </style>

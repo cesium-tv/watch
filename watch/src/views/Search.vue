@@ -27,16 +27,17 @@
       </div>
       <div class="column">
         <Board
+          v-model="keywords"
           class="keyboard"
-          @value="onInput"
         />
       </div>
     </div>
     </section>
       <div class="column">
-        <div>
+        <div ref="results">
           <GridRow
             :category="results"
+            :auto-select="true"
           />
         </div>
       </div>
@@ -59,12 +60,19 @@ export default {
   data() {
     return {
       terms: null,
+      keywords: null,
       results: {
         name: 'Search Results',
         videos: null,
       },
       _searchHandle: null,
     };
+  },
+
+  watch: {
+    keywords(s) {
+      this.onInput(s);
+    },
   },
 
   methods: {
@@ -77,21 +85,35 @@ export default {
 
       clearTimeout(this._searchHandle);
       this._searchHandle = setTimeout(() => {
-        api.get('/search/terms/', { params: { s: `${s}*` }})
-          .then((r) => {
-            this.terms = r.data.results;
-          })
-          .catch(e => {
-            console.error(e);
-            this.terms = null;
-          });
+        this.onTerms(s);
       }, 1000);
     },
 
+    onTerms(s) {
+      if (s.indexOf(' ') === -1) {
+        s = `${s}*`;
+      }
+
+      api.get('/search/terms/', { params: { s }})
+        .then((r) => {
+          this.terms = r.data.results.map(v => {
+            v.term.ngram = v.term.ngram.toUpperCase();
+            return v;
+          });
+        })
+        .catch(e => {
+          console.error(e);
+          this.terms = null;
+        });
+    },
+
     onSearch(s) {
+      this.keywords = s;
+
       api.get('/search/videos/', { params: { s }})
         .then((r) => {
           this.results.videos = r.data.results.map(v => v.video);
+          this.results.count = r.data.results.length;
         })
         .catch(e => {
           console.error(e);

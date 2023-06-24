@@ -8,8 +8,7 @@
         <h2
           id="input"
           class="title has-text-light"
-          :style="`margin: ${keyMargin}px;`"
-        >{{ value }}</h2>
+        >{{ value }}<span class="blink">_</span></h2>
       </div>
     </slot>
     <div
@@ -47,11 +46,17 @@ export default {
     Empty,
   },
 
+  props: {
+    value: {
+      type: String,
+      default: null,
+    },
+  },
+
   data() {
     return {
       panel: 0,
       cursor: 0,
-      value: '',
     };
   },
 
@@ -84,18 +89,20 @@ export default {
 
   methods: {
     onClick(code) {
+      let value = this.value || '';
+
       if (code === '⇭') {
         this.panel = (this.panel === 1) ? 0 : 1;
         return;
       } else if (code === '⌧') {
-        this.value = '';
+        value = '';
       } else if (code === '⌫') {
-        this.value = this.value.substring(0, this.value.length - 1);
+        value = value.substring(0, value.length - 1);
       } else {
-        this.value += code;
+        value += code;
       }
 
-      this.$emit('value', this.value);
+      this.$emit('input', value);
     },
   },
 }
@@ -104,15 +111,26 @@ export default {
 <style scoped>
 #input-wrapper {
   text-align: left;
-  width: 320px;
+  width: 280px;
   height: 36px;
   direction: rtl;
   overflow: hidden;
+  margin-left: 10px;
 }
 
 #input {
   white-space: nowrap;
   direction: ltr;
   display: inline-block;
+}
+
+.blink {
+  animation: blinker 0.5s ease infinite;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
 }
 </style>

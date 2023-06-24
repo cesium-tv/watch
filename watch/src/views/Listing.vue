@@ -19,21 +19,35 @@ export default {
 
   computed: {
     ...mapGetters({
-      channels: 'channels',
-      playedVideos: 'getPlayedVideos',
+      channels: 'channels/channels',
+      videosByChannel: 'videos/videosByChannel',
+      playedVideos: 'videos/playedVideos',
     }),
 
     categories() {
       switch (this.$route.name) {
         case 'home':
-          if (!this.channels) return;
-          return this.channels.filter(c => c.n_videos);
+          if (!this.channels) {
+            return [];
+          }
+
+          return this.channels.map(c => {
+            const videos = this.videosByChannel(c.uid);
+
+            return {
+              name: c.name,
+              count: videos.length,
+              videos,
+            };
+          });
 
         case 'resume':
+          const videos = this.playedVideos;
           return [
             {
               name: 'Resume playing',
-              videos: this.playedVideos,
+              count: videos.length,
+              videos,
             }
           ];
       }
@@ -41,8 +55,7 @@ export default {
   },
 
   mounted() {
-    this.$store.dispatch('updateChannels');
-    this.$store.dispatch('updateVideos');
+    this.$store.dispatch('channels/get');
   },
 };
 </script>
