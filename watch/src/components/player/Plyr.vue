@@ -5,27 +5,17 @@
 </template>
 
 <script>
+import Plyr from 'plyr';
+import Hls from 'hls.js';
 import Vue from 'vue';
-import { KEYCODE } from '@/config';
-
-const KEYCODES = {
-  PLAY_PAUSE: [KEYCODE.PAUSE, KEYCODE.SPACE, KEYCODE.ENTER],
-  PLAY: [KEYCODE.PLAY, KEYCODE.PLAY_TV],
-  FFD: [KEYCODE.FFW, KEYCODE.RIGHT],
-  RWD: [KEYCODE.RWD, KEYCODE.LEFT],
-  STOP: [KEYCODE.STOP, KEYCODE.STOP_TV, KEYCODE.BACK, KEYCODE.ESC],
-};
+import { CONTROLS } from '@/config';
 
 export default {
   name: 'Plyr',
 
   props: {
-    value: {
+    source: {
       type: Object,
-    },
-    updateInterval: {
-      type: Number,
-      default: 1.0
     },
   },
 
@@ -36,13 +26,10 @@ export default {
         keyDown: this.onKey.bind(this),
       },
       _controlFlash: null,
-      _lastUpdateTime: 0,
     };
   },
 
   mounted() {
-    document.addEventListener('keydown', this.eventHandlers.keyDown);
-
     this.player = new Plyr(this.$refs.video, {
       controls: this.defineControls,
       fullscreen: {
@@ -50,27 +37,22 @@ export default {
       },
       hideControls: false,
       autoplay: false,
+      keyboard: {
+        focused: false,
+        global: false,
+      },
     });
     this.player.on('play', () => {
-      const video = Object.assign({}, this.value);
-      if (!video) return;
+      console.debug('Played');
       this.player.toggleControls(false);
-      this.$emit('playing', video);
+      this.$emit('playing');
     });
     this.player.on('pause', () => {
-      const video = Object.assign({}, this.value);
-      if (!video) return;
-      this.$emit('pause', video);
+      console.debug('Paused');
+      this.$emit('pause');
     });
     this.player.on('timeupdate', p => {
-      const video = Object.assign({}, this.value);
-      const time = this.player.currentTime;
-      if (!video) return;
-      if (this._lastUpdateTime && time - this._lastUpdateTime < this.updateInterval) {
-        return;
-      }
-      this._lastUpdateTime = time;
-      this.$emit('timeupdate', video, time);
+      this.$emit('timeupdate', this.player.currentTime);
     });
     this.player.on('ended', this.onEnd);
     // If a source is set, play it, we also react if our value is changed
@@ -80,43 +62,9 @@ export default {
     }
   },
 
-  beforeUnmount() {
-    try {
-      this.player.destroy();
-    } catch (e) {
-      console.error(e);
-    }
-    this.player = null;
-  },
-
-  unmount() {
-    document.removeEventListener('keydown', this.eventHandlers.keyDown);
-  },
-
   computed: {
-    source() {
-      if (!this.value) {
-        return;
-      }
-
-      const dimensions = Object.keys(this.value.sources);
-      dimensions.sort();
-      const bestSource = this.value.sources[dimensions[0]];
-      return {
-        type: 'video',
-        title: this.value.title,
-        sources: [
-          {
-            src: bestSource.url,
-            type: bestSource.mime,
-            size: bestSource.height,
-          },
-        ],
-      };
-    },
-
     visible() {
-      return (this.source);
+      return Boolean(this.source);
     },
 
     isSourceHls() {
@@ -124,18 +72,21 @@ export default {
         return false;
       }
 
-      const urlp = new URL(this.source.sources[0].src);
+      const urlp = new URL(this.source.source.src);
       return urlp.pathname.toLowerCase().endsWith('.m3u8');
     },
   },
 
   watch: {
-    source(source) {
-      if (source) {
-        this.start(source);
-      } else {
+    source(value) {
+      if (!value) {
         this.stop();
+        document.removeEventListener('keydown', this.eventHandlers.keyDown);
+        return;
       }
+
+      document.addEventListener('keydown', this.eventHandlers.keyDown);
+      this.start(value);
     },
   },
 
@@ -158,6 +109,7 @@ export default {
 
     start(source) {
       console.log('Playing source:', source);
+      const video = source.video;
 
       if (this.isSourceHls) {
         if (!Hls.isSupported()) {
@@ -165,24 +117,36 @@ export default {
         }
 
         const hls = new Hls();
-        hls.loadSource(source.sources[0].src);
+        hls.loadSource(source.source.src);
         hls.attachMedia(this.$refs.video);
-      } else {
-        this.player.source = source;
-      }
-      this._lastUpdateTime = 0;
 
-      if (!this.value.cursor || !this.value.cursor.current) {
+      } else {
+        this.player.source = {
+          type: 'video',
+          title: video.title,
+          sources: [
+            source.source,
+          ],
+          poster: video.poster,
+        };
+
+      }
+
+      const play = () => {
         this.player.play();
+      };
+
+      if (!video.cursor || !video.cursor.current) {
+        play();
 
       } else {
         // NOTE: I think this event fires multiple times, however, currentTime
         // can only be set once duration is set.
         const setTime = () => {
           if (this.player.duration) {
-            this.player.currentTime = this.value.cursor.current;
-            this.player.play();
             this.player.off('canplay', setTime);
+            this.player.currentTime = video.cursor.current;
+            play();
           }
         };
         this.player.on('canplay', setTime);
@@ -198,28 +162,34 @@ export default {
     },
 
     stop() {
+      console.debug('Stopping');
       this.player.stop();
       this.$emit('stopped');
     },
 
     pause() {
+      console.debug('Pausing');
       this.player.pause();
     },
 
     resume() {
+      console.debug('Resuming');
       this.player.play();
     },
 
     toggle() {
+      console.debug('Toggling play state');
       this.player.togglePlay();
     },
 
     ffd(seekTime=null) {
+      console.debug('Seeing forward');
       this.player.forward(seekTime);
       this.flashControls();
     },
 
     rwd(seekTime=null) {
+      console.debug('Seeking reverse');
       this.player.rewind(seekTime)
       this.flashControls();
     },
@@ -229,19 +199,19 @@ export default {
     },
 
     onKey(ev) {
-      if (!this.player.playing) return;
-
-      if (KEYCODES.STOP.includes(ev.keyCode)) {
+      if (ev.keyCode in CONTROLS.STOP) {
         this.stop();
-      } else if (KEYCODES.PLAY) {
+      } else if (ev.keyCode in CONTROLS.PLAY) {
         this.resume();
-      } else if (KEYCODES.PLAY_PAUSE) {
+      } else if (ev.keyCode in CONTROLS.PLAY_PAUSE) {
         this.toggle();
-      } else if (KEYCODES.FFD.includes(ev.keyCode)) {
+      } else if (ev.keyCode in CONTROLS.FFD) {
         this.ffd();
-      } else if (KEYCODES.RWD.includes(ev.keyCode)) {
+      } else if (ev.keyCode in CONTROLS.RWD) {
         this.rwd();
       }
+
+      ev.preventDefault();
     },
   },
 }

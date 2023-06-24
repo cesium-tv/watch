@@ -1,4 +1,4 @@
-VUE_SRC = $(shell find public src)
+VUE_SRC = $(shell find index.html src)
 
 
 node_modules: package-lock.json
@@ -10,19 +10,24 @@ dist:
 	mkdir dist
 
 
-../dist/index.html: $(VUE_SRC)
+dist/index.html: $(VUE_SRC)
 	npm run build
-	touch ../dist/index.html
+	touch dist/index.html
 
 
-build: node_modules ../dist/index.html
+build: node_modules dist/index.html
 
 
 .PHONY: dev
 dev: node_modules
-	npm run serve
+	npm run dev
+
+
+.PHONY: preview
+preview:
+	npm run preview
 
 
 .PHONY: clean
 clean:
-	rm -rf node_modules
+	rm -rf node_modules dist

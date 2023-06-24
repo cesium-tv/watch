@@ -19,7 +19,7 @@
       </b-sidebar>
       <div
         id="main"
-        :style="`padding-left: ${(this.reduce) ? 60 : 170};`"
+        :style="style"
       >
         <router-view/>
       </div>
@@ -31,9 +31,9 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import Menu from '@/components/Menu';
-import Video from '@/components/player/Video';
-import Loading from '@/components/Loading';
+import Menu from '@/components/Menu.vue';
+import Video from '@/components/player/Video.vue';
+import Loading from '@/components/Loading.vue';
 
 export default {
   name: 'App',
@@ -52,6 +52,10 @@ export default {
 
   computed: {
     ...mapGetters(['isAuthenticated']),
+
+    style() {
+      return `padding-left: ${(this.reduce) ? 60 : 170}px;`;
+    },
   },
 }
 </script>

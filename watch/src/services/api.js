@@ -1,5 +1,4 @@
 import axios from 'axios';
-import Vue from 'vue';
 import { API_URL } from '@/config';
 import store from '@/store';
 
@@ -9,9 +8,9 @@ const api = axios.create({
 
 api.interceptors.request.use(
   async (config) => {
-    const token = store.getters.token;
+    const token = store.getters['auth/token'];
 
-    Vue.prototype.$bus.$emit('busy');
+    store.dispatch('playing/busy');
     if (token) {
       config.headers.Authorization = `Bearer ${token.access_token}`;
     }
@@ -19,18 +18,20 @@ api.interceptors.request.use(
     return config;
   },
   error => {
-    Vue.prototype.$bus.$emit('idle');
+    store.dispatch('playing/idle');
     Promise.reject(error);
   }
 )
 
 api.interceptors.response.use(
   response => {
-    Vue.prototype.$bus.$emit('idle');
+    store.dispatch('playing/idle');
     return response;
   },
   async (error) => {
-    Vue.prototype.$bus.$emit('idle');
+    console.error(error);
+    store.dispatch('playing/idle');
+
     if (error.response.status === 403) {
       store.dispatch('refresh')
     }

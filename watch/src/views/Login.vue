@@ -3,8 +3,8 @@
 </template>
 
 <script>
-import Password from '@/components/login/Password';
-import DeviceCode from '@/components/login/DeviceCode';
+import Password from '@/components/login/Password.vue';
+import DeviceCode from '@/components/login/DeviceCode.vue';
 
 const AUTH_TYPES  = {
   password: Password,

@@ -3,19 +3,20 @@
     v-if="visible"
   >
     <p
-      v-if="category.name"
+      v-if="name"
       class="title channel-name is-3 has-text-light"
-    >{{ category.name }} ({{ category.videos.length }})</p>
-    <div
-      ref="row"
-      class="row"
-    >
+    >{{ name }} ({{ items.length }})</p>
+    <div class="row">
       <GridItem
-        v-for="(video, i) in category.videos"
+        v-for="(item, i) in items"
         :key="i"
-        :video="video"
+        :item="item"
+        :auto-select="autoSelect && i === 0"
+        :data-index="i"
+        ref="items"
       />
       <div
+        v-if="returnVisible"
         class="card ek-selectable return"
         data-ek-activate-event-name="ek:activate"
         @ek:activate="onReturnLeft"
@@ -38,7 +39,7 @@
 </template>
 
 <script>
-import GridItem from '@/components/grid/GridItem';
+import GridItem from '@/components/grid/GridItem.vue';
 
 export default {
   name: 'GridRow',
@@ -48,22 +49,34 @@ export default {
   },
 
   props: {
-    category: {
-      type: Object,
+    name: {
+      type: String,
       default: null
+    },
+    items: {
+      type: Array,
+      default: [],
+    },
+    autoSelect: {
+      type: Boolean,
+      default: false,
     }
   },
 
   computed: {
     visible() {
-      return this.category.videos && this.category.videos.length;
+      return Boolean(this.items.length);
+    },
+
+    returnVisible() {
+      return this.items.length >= 5;
     },
   },
 
   methods: {
     onReturnLeft() {
-      const div = this.$refs.row.firstChild;
-      this.$ek.select(div);
+      const div = this.$refs.items.find(o => o.$attrs['data-index'] === 0).$el;
+      this.$emit('scrollTo', div);
     },
   },
 }
@@ -80,5 +93,24 @@ export default {
   max-width: 72px;
   height: 400px;
   margin: 4px;
+}
+
+.row {
+  display: flex;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  height: 404px;
+}
+
+.ek-selectable {
+  border: solid 2px transparent;
+}
+
+.ek-selected {
+  border: solid 2px var(--primary);
+}
+
+.ek-selected .play-button {
+  display: inline;
 }
 </style>

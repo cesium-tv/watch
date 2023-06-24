@@ -7,7 +7,8 @@
 </template>
 
 <script>
-import Grid from '@/components/grid/Grid';
+import { mapGetters } from 'vuex';
+import Grid from '@/components/grid/Grid.vue';
 
 export default {
   name: 'Listing',
@@ -17,37 +18,44 @@ export default {
   },
 
   computed: {
+    ...mapGetters({
+      channels: 'channels/channels',
+      videosByChannel: 'videos/videosByChannel',
+      playedVideos: 'videos/playedVideos',
+    }),
+
     categories() {
       switch (this.$route.name) {
         case 'home':
-          const channels = this.$store.getters['channels'];
-
-          if (channels) {
-            return channels
-              .filter(c => c.n_videos)
-              .map(c => {
-                return {
-                  name: c.name,
-                  videos: this.$store.getters.getVideosByChannel(c.uid),
-                }
-              });
+          if (!this.channels) {
+            return [];
           }
-          break;
+
+          return this.channels.map(c => {
+            const videos = this.videosByChannel(c.uid);
+
+            return {
+              name: c.name,
+              count: videos.length,
+              videos,
+            };
+          });
 
         case 'resume':
+          const videos = this.playedVideos;
           return [
             {
               name: 'Resume playing',
-              videos: this.$store.getters.getRecentPlays(),
+              count: videos.length,
+              videos,
             }
           ];
       }
-    }
+    },
   },
 
   mounted() {
-    this.$store.dispatch('updateChannels');
-    this.$store.dispatch('updateVideos');
+    this.$store.dispatch('channels/get');
   },
 };
 </script>

@@ -34,7 +34,7 @@
 <script>
 import axios from 'axios';
 import { API_URL, CLIENT_ID, CLIENT_SECRET } from '@/config';
-import utils from '@/utils';
+import { urlJoin } from '@/utils';
 
 export default {
   name: 'Password',
@@ -56,7 +56,7 @@ export default {
         client_secret: CLIENT_SECRET,
         ...this.form,
       };
-      let r = await axios.post(utils.urlJoin(API_URL, '/oauth2/token/'), data);
+      let r = await axios.post(urlJoin(API_URL, '/oauth2/token/'), data);
       this.$store.commit('SET_AUTH', r.json());
       this.$router.push('/');
     }

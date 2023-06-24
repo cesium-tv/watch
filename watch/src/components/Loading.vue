@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import axios from '@/services/api';
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'Loading',
@@ -19,26 +19,9 @@ export default {
   },
 
   computed: {
-    visible() {
-      return this.count > 0;
-    },
-  },
-
-  methods: {
-    inc() {
-      this.count++;
-    },
-
-    dec() {
-      if (--this.count < 0) {
-        this.count = 0
-      }
-    }
-  },
-
-  mounted() {
-    this.$bus.$on('busy', () => this.inc());
-    this.$bus.$on('idle', () => this.dec());
+    ...mapGetters({
+      visible: 'playing/isBusy',
+    }),
   },
 }
 </script>

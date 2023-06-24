@@ -1,9 +1,5 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
 import api from '@/services/api';
 import { CLIENT_ID, CLIENT_SECRET } from '@/config';
-
-Vue.use(Vuex)
 
 let auth = localStorage.getItem('auth');
 console.debug('Read auth info from localStorage', auth)
@@ -11,13 +7,12 @@ if (auth) {
   auth = JSON.parse(auth);
 }
 
-const store = new Vuex.Store({
+export default {
+  namespaced: true,
+
   state: {
     auth,
     user: null,
-    channels: null,
-    videos: null,
-    options: null,
   },
 
   getters: {
@@ -31,22 +26,6 @@ const store = new Vuex.Store({
 
     token(state) {
       return state.auth;
-    },
-
-    channels(state) {
-      return state.channels;
-    },
-
-    videos(state) {
-      return state.videos;
-    },
-
-    getVideosByChannel: (state) => (channel_uid) => {
-      if (!state.videos) {
-        return [];
-      }
-      //return state.videos;
-      return state.videos.filter(o => o.channel.uid === channel_uid);
     },
   },
 
@@ -65,18 +44,6 @@ const store = new Vuex.Store({
 
     SET_USER(state, user) {
       state.user = user;
-    },
-
-    SET_CHANNELS(state, channels) {
-      state.channels = channels;
-    },
-
-    SET_VIDEOS(state, videos) {
-      state.videos = videos;
-    },
-
-    ADD_VIDEOS(state, videos) {
-      state.videos.push(...videos);
     },
   },
 
@@ -105,7 +72,9 @@ const store = new Vuex.Store({
       commit('SET_AUTH', r.data);
     },
 
-    async refresh({ state, commit }) {
+    async refresh({ state, getters, commit }) {
+      if (!getters.isAuthenticated) return;
+
       const data = new URLSearchParams();
       data.append('grant_type', 'refresh_token');
       data.append('client_id', CLIENT_ID);
@@ -131,32 +100,5 @@ const store = new Vuex.Store({
       commit('SET_USER', null);
       localStorage.removeItem('cesium.tv-token');
     },
-
-    async updateChannels({ commit }) {
-      let r = await api.get('/channels/');
-      commit('SET_CHANNELS', r.data.results);
-    },
-
-    async updateVideos({ commit }) {
-      commit('SET_VIDEOS', []);
-      const limit = 1000;
-      let offset = 0;
-
-      while (true) {
-        let r = await api.get(`/videos/`,
-          { params: { limit, offset }}
-        );
-        offset += limit;
-        if (r.data.results.length === 0) break;
-        commit('ADD_VIDEOS', r.data.results );
-      }
-    },
-
-    async getVideoDetails(_, { video_id }) {
-      let r = await api.get(`/videos/${video_id}/`);
-      return r.data;
-    }
   },
-});
-
-export default store;
+};

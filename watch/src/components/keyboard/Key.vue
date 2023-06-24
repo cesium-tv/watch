@@ -1,7 +1,7 @@
 <template>
   <button
     class="ek-selectable button has-text-light"
-    style="border: none;"
+    :style="style"
     ref="button"
     @click="onClick"
   ><strong>{{ label }}</strong></button>
@@ -24,17 +24,23 @@ export default {
     },
   },
 
-  mounted() {
-    const el = this.$refs.button;
-    let width = KEY_WIDTH;
+  computed: {
+    style() {
+      //const el = this.$refs.button;
+      //let width = KEY_WIDTH;
 
-    if (this.label.length > 1) {
-      const elWidth = el.offsetWidth;
-      width = elWidth + (KEY_WIDTH - (elWidth % KEY_WIDTH));
-      width += width / KEY_WIDTH * 3;
-    }
+      //if (this.label.length > 1) {
+        //const elWidth = el.offsetWidth;
+        //width = elWidth + (KEY_WIDTH - (elWidth % KEY_WIDTH));
+        //width += width / KEY_WIDTH * 3;
+      //}
 
-    el.style = `width: ${width}; margin: ${KEY_MARGIN}`
+      let length = (this.label) ? this.label.length : 1;
+      length = Math.floor(length / 3) + 1;
+      let width = length * KEY_WIDTH;
+      width += (width / KEY_WIDTH - 2) * KEY_MARGIN;
+      return `width: ${width}px; margin: ${KEY_MARGIN}px;`;
+    },
   },
 
   methods: {
@@ -47,6 +53,10 @@ export default {
 </script>
 
 <style scoped>
+.button {
+  border: none;
+}
+
 .ek-selected {
   background-color: var(--primary) !important;
 }

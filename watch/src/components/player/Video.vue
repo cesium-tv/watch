@@ -1,11 +1,11 @@
 <template>
   <div
-    id="container"
+    id="plyr-container"
     refs="container"
     :class="{ hide: !visible }"
   >
     <Plyr
-      v-model="video"
+      :source="source"
       :update-interval="10"
       @playing="onPlaying"
       @stopped="onStopped"
@@ -29,9 +29,10 @@
 </template>
 
 <script>
-import screenfull from 'screenfull';
-import Plyr from '@/components/player/Plyr';
-import api from '@/services/api';
+import { mapGetters } from 'vuex';
+import Plyr from '@/components/player/Plyr.vue';
+import { dateDiff } from '@/utils';
+import { CURSOR_UPDATE_INTERVAL } from '@/config';
 
 export default {
   name: 'Video',
@@ -40,74 +41,86 @@ export default {
     Plyr,
   },
 
+  computed: {
+    ...mapGetters({
+      video: 'playing/playing',
+    }),
+
+    visible() {
+      return Boolean(this.video);
+    },
+  },
+
   data() {
     return {
-      video: null,
-      eventHandlers: {
-        screenFull: this.onFullscreen.bind(this),
-      },
+      source: null,
+      _lastCursorUpdate: 0,
     };
   },
 
-  computed: {
-    visible() {
-      return (this.video);
-    },
-  },
+  watch: {
+    async video(value) {
+      if (!value) {
+        this.source = null;
+        this.$ek.resume();
+        return
+      }
 
-  mounted() {
-    screenfull.on('change', this.eventHandlers.screenFull);
+      this.$ek.pause();
 
-    // NOTE: whenever another component wants to play a video, it raises this
-    // event with the video details, this is the entry point for playing.
-    this.$bus.$on('video:play', video => {
-      screenfull.request(this.$refs.container);
-      this.video = video;
-    });
-  },
+      const sources = await this.$store.dispatch('videos/getVideoSources', value.uid);
+      const dimensions = Object.keys(sources);
+      dimensions.sort();
+      const bestSource = sources[dimensions[0]];
 
-  unmounted() {
-    screenfull.off('change', this.eventHandlers.screenFull);
+      this.source = {
+        video: value,
+        source: {
+          src: bestSource.url,
+          type: bestSource.mime,
+          size: bestSource.height,
+        },
+        sources: sources,
+      };
+    }
   },
 
   methods: {
-    onPlaying(video) {
-      api.post(`/videos/${video.uid}/played/`)
-        .catch(console.error);
+    onPlaying() {
+      if (!this.video) {
+        return;
+      }
+
+      this.$store.dispatch('videos/updatePlayed', this.video);
     },
 
-    onTimeUpdate(video, time) {
-      const cursor = {
-        current: time,
-        duration: video.duration,
-      };
-      api.post(`/videos/${video.uid}/cursor/`, {
-        cursor,
-      })
-        .catch(console.error);
-      this.video.cursor = cursor;
+    onTimeUpdate(time) {
+      if (!this.video) {
+        return;
+      }
+
+      if (!dateDiff(this._lastCursorUpdate * 1000, {
+        d2: time * 1000,
+        seconds: CURSOR_UPDATE_INTERVAL,
+      })) {
+        return;
+      }
+
+      this.$store.dispatch('videos/updateCursor', { video: this.video, time });
+      this._lastCursorUpdate = time;
     },
 
     onStopped() {
-      // NOTE: The player informs us when it is done playing, for now we shut
-      // down and emit the global event to indicate playback has completed.
       // TODO: this is where we will add the queue playing functionality.
-      screenfull.exit();
-      this.video = null;
-      this.$bus.$emit('video:stop');
-    },
-
-    onFullscreen() {
-      if (!screenfull.isFullscreen) {
-        this.video = null;
-      }
+      this.$store.dispatch('playing/stop');
     },
   },
 }
 </script>
 
 <style scoped>
-#container {
+#plyr-container {
+  background-color: black;
   position: absolute;
   width: 100%;
   height: 100%;
