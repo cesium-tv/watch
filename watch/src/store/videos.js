@@ -1,166 +1,174 @@
+import qs from 'qs';
 import api from '@/services/api';
-import { dateDiff } from '@/utils';
-import { DATA_FETCH_INTERVAL } from '@/config';
+import { DATA_REFRESH_INTERVAL, VIDEO_FETCH_LIMIT } from '@/config';
+import { dateDiff } from '../utils';
 
 function splitVideos(data) {
-  const videos = {};
-  const channels = {};
+    const videos = {};
+    const c2v = {};
 
-  data.forEach(v => {
-    const played = localStorage.getItem(`played-${v.uid}`);
-    const cursor = localStorage.getItem(`cursor-${v.uid}`);
+    data.forEach(v => {
+      const played = localStorage.getItem(`played-${v.uid}`);
+      const cursor = localStorage.getItem(`cursor-${v.uid}`);
 
-    if (cursor) {
-      v.cursor = JSON.parse(cursor);
-    }
-    v.is_played = (played === 'true') ? true : v.is_played;
+      if (cursor) {
+        v.cursor = JSON.parse(cursor);
+      }
+      v.is_played = (played === 'true') ? true : v.is_played;
 
-    for (const channel_uid of v.channels) {
-      if (!(channel_uid in channels)) channels[channel_uid] = {};
-      channels[channel_uid][v.uid] = v;
+      v.published = Date.parse(v.published);
+      v.created = Date.parse(v.created);
+
+      for (const channel_uid of v.channels) {
+        let channelVideos = c2v[channel_uid];
+        if (!channelVideos) {
+            channelVideos = c2v[channel_uid] = new Set();
+        }
+        channelVideos.add(v.uid);
+      }
+
       videos[v.uid] = v;
-    }
-  });
+    });
 
-  return { channels, videos };
+    return { videos, c2v };
+}
+
+function splitChannels(data) {
+    const channels = {};
+
+    data.forEach(c => {
+        c.created = Date.parse(c.created);
+        channels[c.uid] = c;
+    });
+
+    return { channels };
 }
 
 export default {
-  namespaced: true,
+    namespaced: true,
 
-  state: {
-    videos: {},
-    videoSources: {},
-    videosByChannel: {},
-    lastUpdated: null,
-  },
-
-  getters: {
-    videosByChannel: (state) => (channel_uid) => {
-      if (!state.videos || !state.videosByChannel[channel_uid]) {
-        return [];
-      }
-      return Object.values(state.videosByChannel[channel_uid])
-        .filter(o => {
-          if (!o.cursor) {
-            return true;
-          }
-          return o.cursor.current / o.cursor.duration <= 0.10;
-        });
-    },
-
-    videoSources: (state) => {
-      return state.videoSources;
-    },
-
-    playedVideos: (state) => {
-      return Object.values(state.videos).filter(o => {
-        if (!o.cursor) {
-          return false;
+    state() {
+        return {
+            videos: null,
+            channels: null,
+            c2v: null,
+            lastRefresh: null,
         }
-        return o.cursor.current / o.cursor.duration > 0.10;
-    });
-    },
-  },
-
-  mutations: {
-    SET_VIDEOS(state, videos) {
-      const data = splitVideos(videos);
-
-      state.videos = data.videos;
-      state.channels = data.channels;
     },
 
-    ADD_VIDEOS(state, videos) {
-      const data = splitVideos(videos);
+    mutations: {
+        SET_CHANNELS(state, data) {
+            const { channels } = splitChannels(data);
+            state.channels = channels;
+        },
 
-      for (const [k, v] of Object.entries(data.channels)) {
-        if (!(k in state.videosByChannel)) state.videosByChannel[k] = {};
-        Object.entries(v).forEach(([kk, vv]) => {
-          state.videosByChannel[k][kk] = vv;
-        })
-      }
-      for (const [k, v] of Object.entries(data.videos)) {
-        state.videos[k] = v;
-      }
+        SET_VIDEOS(state, data) {
+            const { videos, c2v } = splitVideos(data);
+            state.videos = videos;
+            state.c2v = c2v;
+        },
+
+        SET_LAST_REFRESH(state) {
+            state.lastRefresh = new Date();
+        },
+
+        ADD_VIDEOS(state, data) {
+            const { videos, c2v } = splitVideos(data);
+
+            for (const [k, v] of Object.entries(videos)) {
+                state.videos[k] = v;
+            }
+            for (const [k, v] of Object.entries(c2v)) {
+                state.c2v[k] = v;
+            }
+        },
     },
 
-    SET_VIDEO_SOURCES(state, {video_uid, sources }) {
-      state.videoSources[video_uid] = sources;
+    actions: {
+        async refresh({ state, commit, getters }) {
+            if (!getters.shouldRefresh) return;
+
+            let r;
+            const limit = VIDEO_FETCH_LIMIT;
+            let offset = 0;
+
+            try {
+                r = await api.get('/channels/');
+            } catch (e) {
+                console.error(e);
+                return;
+            }
+            commit('SET_CHANNELS', r.data.results);
+
+            while (true) {
+                const mutation = (offset === 0) ? 'SET_VIDEOS' : 'ADD_VIDEOS';
+                try {
+                    r = await api.get(
+                        '/videos/', {
+                            params: { limit, offset, field: ['channels', 'sources'] },
+                            paramsSerializer: p => qs.stringify(p, { arrayFormat: 'repeat'}),
+                        }
+                    );
+                } catch (e) {
+                    console.error(e);
+                    return;
+                }
+                commit(mutation, r.data.results);
+
+                if (r.data.results.length < limit) {
+                    break;
+                }
+                // First page only for now, to get all data, comment next line:
+                break;
+                offset += limit;
+            }
+
+            commit('SET_LAST_REFRESH');
+        },
     },
 
-    SET_PLAYED(state, video) {
-      const v = state.videos[video.uid];
-      if (v) {
-        v.is_played = true;
-        localStorage.setItem(`played-${video.uid}`, 'true');
-      }
+    getters: {
+        shouldRefresh(state) {
+            return dateDiff(state.lastRefresh, { seconds: DATA_REFRESH_INTERVAL });
+        },
+
+        videos(state) {
+            if (state.videos === null) return [];
+
+            return state.videos;
+        },
+
+        channels(state) {
+            if (state.channels === null) return [];
+
+            return state.channels;
+        },
+
+        videosByPublishedTime(state, getters) {
+            return Object.values(getters.videos).toSorted((a, b) => a.published - b.published);
+        },
+
+        videosByChannel(state) {
+            if (state.channels === null || state.c2v === null) return [];
+
+            const channels = Object.values(state.channels).toSorted((a, b) => a.created - b.created);
+
+            for (const channel of channels) {
+                const videos = channel.videos = [];
+                const videoUids = state.c2v[channel.uid];
+                if (!videoUids) continue;
+                for (const video_uid of videoUids) {
+                    videos.push(state.videos[video_uid]);
+                    videos.sort((a, b) => a.published - b.published);
+                }
+            }
+
+            channels.sort((a, b) => {
+                if (!a.videos[0] || !b.videos[0]) return;
+                return a.videos[0].published - b.videos[0].published
+            });
+
+            return channels.filter((c) => c.videos.length);
+        },
     },
-
-    SET_CURSOR(state, { video, cursor }) {
-      const v = state.videos[video.uid];
-      if (v) {
-        v.cursor = cursor;
-        localStorage.setItem(`cursor-${video.uid}`, JSON.stringify(cursor));
-      }
-    },
-  },
-
-  actions: {
-    async get({ state, commit }) {
-      if (!dateDiff(state.lastUpdated, { seconds: DATA_FETCH_INTERVAL })) {
-        return;
-      }
-
-      const limit = 1000;
-      let offset = 0;
-
-      while (true) {
-        const r = await api.get(`/videos/`,
-          { params: { limit, offset, field: 'channel' }}
-        );
-
-        if (offset === 0) {
-          commit('SET_VIDEOS', r.data.results );
-        } else {
-          commit('ADD_VIDEOS', r.data.results );
-        }
-
-        if (r.data.results.length < limit) {
-          break;
-        }
-        offset += limit;
-      }
-    },
-
-    async getVideoSources({ state, commit }, video_uid) {
-      let sources = state.videoSources[video_uid];
-      if (!sources) {
-        const r = await api.get(`/videos/${video_uid}/sources/`);
-        sources = r.data;
-        commit('SET_VIDEO_SOURCES', { video_uid, sources });
-      }
-      return sources;
-    },
-
-    async updatePlayed({ commit, rootGetters }, video) {
-      commit('SET_PLAYED', video);
-      if (rootGetters['auth/isAuthenticated']) {
-        await api.post(`/videos/${video.uid}/played/`);
-      }
-    },
-
-    async updateCursor({ commit, rootGetters }, { video, time }) {
-      const cursor = {
-        current: time,
-        duration: video.duration,
-      };
-      commit('SET_CURSOR', { video, cursor });
-      if (rootGetters['auth/isAuthenticated']) {
-        await api.post(`/videos/${video.uid}/cursor/`, {
-          cursor,
-        });
-      }
-    },
-  },
 };

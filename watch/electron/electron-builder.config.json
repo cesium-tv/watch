@@ -1,0 +1,35 @@
+{
+  "appId": "tv.cesium.watch",
+  "productName": "Cesium.TV",
+  "copyright": "Copyright © 2023 ${author}",
+  "directories": {
+    "buildResources": "resources"
+  },
+  "files": [
+    "assets/**/*",
+    "build/**/*",
+    "capacitor.config.*",
+    "app/**/*"
+  ],
+  "publish": {
+    "provider": "github"
+  },
+  "nsis": {
+    "allowElevation": true,
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true
+  },
+  "win": {
+    "target": "nsis",
+    "icon": "assets/appIcon.ico"
+  },
+  "mac": {
+    "category": "public.app-category.video",
+    "target": "dmg"
+  },
+  "linux": {
+    "target": "AppImage",
+    "category": "AudioVideo",
+    "icon": "assets/appIcon.png"
+  }
+}

@@ -1,33 +1,69 @@
-VUE_SRC = $(shell find index.html src)
+ANDROID_HOME=${HOME}/Android
 
+ifeq ($(MAKECMDGOALS),build-android)
+include .android-build.mk
+endif
 
-node_modules: package-lock.json
-	npm i
-	touch node_modules
+/usr/bin/rpm:
+	sudo apt install -y rpm
 
+/usr/bin/flatpak:
+	sudo apt install -y flatpak
 
-dist:
-	mkdir dist
+/usr/bin/flatpak-builder:
+	sudo apt install -y flatpak-builder
 
+deps: /usr/bin/rpm /usr/bin/flatpak /usr/bin/flatpak-builder
 
-dist/index.html: $(VUE_SRC)
+# Build web app
+.PHONY: build
+build:
 	npm run build
-	touch dist/index.html
 
+# Copy web assets to android/
+.PHONY: copy-android
+copy-android: build
+	npx cap sync android
 
-build: node_modules dist/index.html
+# Copy web assets to electron/
+.PHONY: copy-electron
+copy-electron: build
+	npx cap sync @capacitor-community/electron
 
+.PHONY: run-android
+run-android: copy-android
+	ANDROID_SDK_ROOT=${ANDROID_HOME}/Sdk npx cap run android
 
-.PHONY: dev
-dev: node_modules
+.PHONY: build-android
+build-android: copy-android
+# Build
+	ANDROID_HOME='${ANDROID_HOME}' npx cap build android --keystorepath='${STORE_PATH}' --keystorepass='${STORE_PASS}' --keystorealias='${ALIAS_NAME}' --keystorealiaspass=${ALIAS_PASS}
+
+.PHONY: build-electron
+build-electron: copy-electron
+	${MAKE} -C electron build
+
+.PHONY: run-electron
+run-electron: build-electron
+	npx cap open @capacitor-community/electron
+
+.PHONY: package-electron
+package-electron: build-electron
+	${MAKE} -C electron package
+
+.PHONY: package-electron-linux
+package-electron-linux: build-electron
+	${MAKE} -C electron package-linux
+
+.PHONY: package-electron-win
+package-electron-win: build-electron
+	${MAKE} -C electron package-win
+
+run:
 	npm run dev
 
-
-.PHONY: preview
-preview:
-	npm run preview
-
-
-.PHONY: clean
 clean:
-	rm -rf node_modules dist
+	rm -rf dest/ installers/
+
+assets:
+	npx @capacitor/assets generate --iconBackgroundColor #9bb3d5 --iconBackgroundColorDark #252a33 --splashBackgroundColor #9bb3d5 --splashBackgroundColorDark #252a33

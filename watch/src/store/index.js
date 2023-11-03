@@ -1,19 +1,10 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import Auth from '@/store/auth';
-import Channels from '@/store/channels';
-import Videos from '@/store/videos';
-import Playing from '@/store/playing';
+import { createStore } from 'vuex';
+import Videos from '@/store/videos.js';
+import Player from '@/store/player.js';
 
-Vue.use(Vuex);
-
-const store = new Vuex.Store({
-  modules: {
-    auth: Auth,
-    channels: Channels,
-    videos: Videos,
-    playing: Playing,
-  },
+export default createStore({
+    modules: {
+        videos: Videos,
+        player: Player,
+    }
 });
-
-export default store;

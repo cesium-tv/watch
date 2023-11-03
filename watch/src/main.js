@@ -1,26 +1,51 @@
-import Vue from "vue";
-import Buefy from 'buefy';
-import smoothscroll from 'smoothscroll-polyfill';
-import '@procot/webostv';
-import '@mdi/font/css/materialdesignicons.css';
-import 'plyr/dist/plyr.css';
-import '@/services/sentry';
-import '@/services/errokees';
-import App from "./App.vue";
-import router from "@/router";
+import { IonicVue } from '@ionic/vue';
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from '@/router'
 import store from '@/store';
+import Errokees from 'errokees';
 
-smoothscroll.polyfill();
+/* Core CSS required for Ionic components to work properly */
+import '@ionic/vue/css/core.css';
 
-Vue.config.productionTip = false;
+/* Basic CSS for apps built with Ionic */
+import '@ionic/vue/css/normalize.css';
+import '@ionic/vue/css/structure.css';
+import '@ionic/vue/css/typography.css';
 
-Vue.use(Buefy);
+/* Optional CSS utils that can be commented out */
+import '@ionic/vue/css/padding.css';
+import '@ionic/vue/css/float-elements.css';
+import '@ionic/vue/css/text-alignment.css';
+import '@ionic/vue/css/text-transformation.css';
+import '@ionic/vue/css/flex-utils.css';
+import '@ionic/vue/css/display.css';
 
-new Vue({
-  router,
-  store,
+/* Polyfills */
+import 'object.entries/auto';
+import 'array.prototype.tosorted/auto';
 
-  render(h) {
-    return h(App);
-  },
-}).$mount("#app");
+const app = createApp(App);
+
+app.config.globalProperties.$ak = new Errokees({
+    origin: 'right',
+    scroll: false,
+    selectEvent: {
+      name: 'ek:selected',
+    },
+    deselectEvent: {
+      name: 'ek:deselected',
+    },
+    elementTypes: [],
+    mouse: false,
+    observerRoot: null,  // Remove when we update errokees.
+    observerMargin: '0px',
+});
+
+app.use(router);
+app.use(store);
+app.use(IonicVue);
+
+router.isReady().then(() => {
+    app.mount('#app');
+});

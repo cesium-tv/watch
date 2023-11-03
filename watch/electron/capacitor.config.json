@@ -1,0 +1,8 @@
+{
+  "appId": "tv.cesium.mobile",
+  "appName": "cesium-mobile",
+  "webDir": "dist/vite",
+  "server": {
+    "androidScheme": "http"
+  }
+}
