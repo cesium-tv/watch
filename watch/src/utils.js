@@ -1,4 +1,24 @@
-import pathx from 'path';
+function rtrim(x, characters) {
+  var end = x.length - 1;
+  while (characters.indexOf(x[end]) >= 0) {
+    end -= 1;
+  }
+  return x.substr(0, end + 1);
+}
+
+function ltrim(x, characters) {
+  var start = 0;
+  while (characters.indexOf(x[start]) >= 0) {
+    start += 1;
+  }
+  return x.substr(start);
+}
+
+function pathJoin(base, relative) {
+  base = rtrim(base, '/');
+  relative = rtrim(ltrim(relative, '/'), '/');
+  return `${base}/${relative}`;
+}
 
 function urlJoin(base, path, { query, replace }) {
   const urlp = new URL(base);
@@ -6,7 +26,7 @@ function urlJoin(base, path, { query, replace }) {
   if (replace) {
     urlp.pathname = path;
   } else {
-    urlp.pathname = pathx.join(urlp.pathname, path);
+    urlp.pathname = pathJoin(urlp.pathname, path);
   }
 
   if (query) {
@@ -27,6 +47,7 @@ function dateDiff(d1, { seconds, minutes, d2 }) {
 }
 
 export {
+  pathJoin,
   urlJoin,
   dateDiff,
 };

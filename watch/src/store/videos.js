@@ -15,9 +15,11 @@ function splitVideos(data) {
     }
     v.is_played = (played === 'true') ? true : v.is_played;
 
-    if (!(v.channel.uid in channels)) channels[v.channel.uid] = {};
-    channels[v.channel.uid][v.uid] = v;
-    videos[v.uid] = v;
+    for (const channel_uid of v.channels) {
+      if (!(channel_uid in channels)) channels[channel_uid] = {};
+      channels[channel_uid][v.uid] = v;
+      videos[v.uid] = v;
+    }
   });
 
   return { channels, videos };
@@ -115,7 +117,7 @@ export default {
 
       while (true) {
         const r = await api.get(`/videos/`,
-          { params: { limit, offset }}
+          { params: { limit, offset, field: 'channel' }}
         );
 
         if (offset === 0) {

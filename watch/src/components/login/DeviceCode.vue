@@ -32,9 +32,9 @@
 </template>
 
 <script>
-import axios from 'axios';
 import VueQrcode from '@chenfengyuan/vue-qrcode';
-import { urlJoin }  from '@/utils';
+import { urlJoin } from '@/utils';
+import api  from '@/services/api';
 import { API_URL, CLIENT_ID } from '@/config';
 
 export default {
@@ -55,8 +55,8 @@ export default {
     const params = new URLSearchParams();
     params.append('grant_type', 'urn:ietf:params:oauth:grant-type:device_code');
     params.append('client_id', CLIENT_ID);
-    axios
-      .post(urlJoin(API_URL, '/oauth2/device/'), params)
+    api
+      .post('/oauth2/device/', params)
       .then(r => {
         this.authInfo = r.data;
         this.interval = setInterval(this.onPoll.bind(this), 6000);
@@ -71,8 +71,8 @@ export default {
   computed: {
     verifyUrl() {
       const urlp = new URL(API_URL);
-      return utils.urlJoin(`${urlp.origin}`, this.authInfo.verification_uri, {
-        user_code: this.authInfo.user_code
+      return urlJoin(`${urlp.origin}`, this.authInfo.verification_uri, {
+        query: { user_code: this.authInfo.user_code }
       });
     },
 
@@ -80,19 +80,18 @@ export default {
       const urlp = new URL(API_URL);
       return `http://${urlp.host}${this.authInfo.verification_uri}`;
     },
-  },
 
-  methods: {
     isVisible() {
       return this.$router.currentRoute.name === 'login';
     },
+  },
 
+  methods: {
     onPoll() {
-      if (!this.isVisible()) {
-        return;
-      }
+      if (!this.isVisible) return;
+
       this.$store
-        .dispatch('device', this.authInfo.device_code)
+        .dispatch('auth/device', this.authInfo.device_code)
         .then(() => {
           clearInterval(this.interval);
           this.$router.push('/');

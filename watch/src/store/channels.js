@@ -30,10 +30,19 @@ export default {
       }
 
       const videos = [];
-      const r = await api.get('/channels/');
+      const r = await api.get('/channels/', { params: { field: 'videos' }});
       const channels = r.data.results.map(c => {
-        videos.push(...c.videos);
-        delete c.videos;
+        if (c.videos) {
+          videos.push(...c.videos.map(v => {
+            v.channels = [c.uid];
+            return v;
+          }));
+
+          // NOTE: this modifies the channel referenced by each video. Therefore
+          // we are able to skip a shallow copy inside c.videos.map().
+          delete c.videos;
+        }
+
         return c;
       });
       commit('SET_CHANNELS', channels);

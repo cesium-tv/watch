@@ -53,9 +53,9 @@ export default {
       params.append('client_id', CLIENT_ID);
       params.append('client_secret', CLIENT_SECRET);
       params.append('grant_type', 'password');
-      params.append('username', credentials.username);
+      params.append('email', credentials.email);
       params.append('password', credentials.password);
-      const r = await api.post('/users/token/', params);
+      const r = await api.post('/oauth2/token/', params);
       commit('SET_AUTH', r.data);
     },
 
@@ -95,7 +95,7 @@ export default {
     },
 
     async logout({ commit }) {
-      await api.post('/users/revoke-token/');
+      await api.post('/oauth2/revoke-token/');
       commit('SET_AUTH', false);
       commit('SET_USER', null);
       localStorage.removeItem('cesium.tv-token');

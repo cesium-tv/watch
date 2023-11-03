@@ -13,8 +13,8 @@
           class="poster"
           :source="item.poster"
           :alt="item.title"
-          width="476"
-          height="256"
+          :width="476"
+          :height="256"
         />
         <b-button
           icon-left="play"

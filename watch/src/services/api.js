@@ -32,7 +32,7 @@ api.interceptors.response.use(
     console.error(error);
     store.dispatch('playing/idle');
 
-    if (error.response.status === 403) {
+    if (error.response && error.response.status === 403) {
       store.dispatch('refresh')
     }
   }

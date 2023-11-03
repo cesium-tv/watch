@@ -65,11 +65,11 @@ export default {
 
   computed: {
     visible() {
-      return Boolean(this.items.length);
+      return Boolean(this.items && this.items.length);
     },
 
     returnVisible() {
-      return this.items.length >= 5;
+      return this.items && this.items.length >= 5;
     },
   },
 

@@ -13,7 +13,9 @@
             class="ek-selectable button is-small is-rounded has-text-light mt-1 pl-2"
             data-ek-scroll="true"
             data-ek-activate-event-name="click"
+            data-ek-select-event-name="selected"
             @click="onSearch(term.term.ngram)"
+            @selected="onSelect"
           >
             <span class="icon is-small pl-3">
               <b-icon icon="magnify"></b-icon>
@@ -36,7 +38,8 @@
       <div class="column">
         <div ref="results">
           <GridRow
-            :category="results"
+            :name="results.name"
+            :items="results.videos"
             :auto-select="true"
           />
         </div>
@@ -83,9 +86,13 @@ export default {
         return;
       }
 
+      this.onSelect();
+    },
+
+    onSelect() {
       clearTimeout(this._searchHandle);
       this._searchHandle = setTimeout(() => {
-        this.onTerms(s);
+        this.onTerms(this.keywords);
       }, 1000);
     },
 
