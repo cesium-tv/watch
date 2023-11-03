@@ -6,7 +6,7 @@
             v-for="(item, i) in items"
             :key="i"
             :is="component"
-            :data="item"
+            :item="item"
             navUp=":parent:prev:first"
             navDown=":parent:next:first"
             navRight=":next"
@@ -26,6 +26,7 @@ export default {
             type: Array,
             default: [],
         },
+
         component: {
             type: Object,
             default: Video,

@@ -3,18 +3,19 @@
         class="grid"
     >
         <grid-row
-            v-for="(channel, i) in channels"
+            v-for="(item, i) in items"
             :key="i"
-            :name="channel.name"
-            :items="channel.videos"
+            :name="item.name"
+            :items="getSubItems(item)"
+            :item-component="itemComponent"
             ref="rows"
         ></grid-row>
     </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
 import  GridRow from '@/components/grid/GridRow.vue';
+import Video from '@/components/Video.vue';
 
 export default {
     name: 'Grid',
@@ -24,16 +25,26 @@ export default {
     },
 
     props: {
-        categories: {
+        items: {
             type: Array,
             default: [],
-        }
+        },
+
+        subItemsName: {
+            type: String,
+            default: null,
+        },
+
+        itemComponent: {
+            type: Object,
+            default: Video,
+        },
     },
 
-    computed: {
-        ...mapGetters({
-            channels: 'videos/videosByChannel',
-        }),
+    methods: {
+        getSubItems(o) {
+            return o[this.subItemsName];
+        },
     },
 };
 </script>

@@ -3,45 +3,36 @@ import api from '@/services/api';
 import { DATA_REFRESH_INTERVAL, VIDEO_FETCH_LIMIT } from '@/config';
 import { dateDiff } from '../utils';
 
-function splitVideos(data) {
-    const videos = {};
-    const c2v = {};
+function prepareVideos(videos, channels) {
+    videos.forEach(v => {
+        const played = localStorage.getItem(`played-${v.uid}`);
+        const cursor = localStorage.getItem(`cursor-${v.uid}`);
 
-    data.forEach(v => {
-      const played = localStorage.getItem(`played-${v.uid}`);
-      const cursor = localStorage.getItem(`cursor-${v.uid}`);
+        if (cursor) v.cursor = JSON.parse(cursor);
+        v.is_played = (played === 'true') ? true : v.is_played;
+        v.published = Date.parse(v.published);
+        v.created = Date.parse(v.created);
 
-      if (cursor) {
-        v.cursor = JSON.parse(cursor);
-      }
-      v.is_played = (played === 'true') ? true : v.is_played;
+        const channel_uid = v.channels[0];
+        const channel = channels.find(c => c.uid === channel_uid);
 
-      v.published = Date.parse(v.published);
-      v.created = Date.parse(v.created);
+        channel.videos.push(v);
 
-      for (const channel_uid of v.channels) {
-        let channelVideos = c2v[channel_uid];
-        if (!channelVideos) {
-            channelVideos = c2v[channel_uid] = new Set();
-        }
-        channelVideos.add(v.uid);
-      }
-
-      videos[v.uid] = v;
+        // TODO: binary insert, maintain ordering.
+        channel.videos.sort((a, b) => a.published - b.published);
+        v.channel = channel;
     });
 
-    return { videos, c2v };
+    return videos;
 }
 
-function splitChannels(data) {
-    const channels = {};
-
-    data.forEach(c => {
+function prepareChannels(channels) {
+    channels.forEach(c => {
         c.created = Date.parse(c.created);
-        channels[c.uid] = c;
+        c.videos = [];
     });
 
-    return { channels };
+    return channels;
 }
 
 export default {
@@ -51,21 +42,19 @@ export default {
         return {
             videos: null,
             channels: null,
-            c2v: null,
             lastRefresh: null,
         }
     },
 
     mutations: {
         SET_CHANNELS(state, data) {
-            const { channels } = splitChannels(data);
-            state.channels = channels;
+            // Convert dates etc.
+            state.channels = prepareChannels(data);
         },
 
         SET_VIDEOS(state, data) {
-            const { videos, c2v } = splitVideos(data);
-            state.videos = videos;
-            state.c2v = c2v;
+            // Convert dates, map channels to videos.
+            state.videos = prepareVideos(data, state.channels);
         },
 
         SET_LAST_REFRESH(state) {
@@ -73,14 +62,8 @@ export default {
         },
 
         ADD_VIDEOS(state, data) {
-            const { videos, c2v } = splitVideos(data);
-
-            for (const [k, v] of Object.entries(videos)) {
-                state.videos[k] = v;
-            }
-            for (const [k, v] of Object.entries(c2v)) {
-                state.c2v[k] = v;
-            }
+            const videos = prepareVideos(data, state.channels);
+            state.videos.push(...videos);
         },
     },
 
@@ -133,42 +116,23 @@ export default {
         },
 
         videos(state) {
-            if (state.videos === null) return [];
-
-            return state.videos;
+            return state.videos || [];
         },
 
         channels(state) {
-            if (state.channels === null) return [];
-
-            return state.channels;
+            return state.channels || [];
         },
 
         videosByPublishedTime(state, getters) {
-            return Object.values(getters.videos).toSorted((a, b) => a.published - b.published);
+            return getters.videos.toSorted((a, b) => a.published - b.published);
         },
 
-        videosByChannel(state) {
-            if (state.channels === null || state.c2v === null) return [];
-
-            const channels = Object.values(state.channels).toSorted((a, b) => a.created - b.created);
-
-            for (const channel of channels) {
-                const videos = channel.videos = [];
-                const videoUids = state.c2v[channel.uid];
-                if (!videoUids) continue;
-                for (const video_uid of videoUids) {
-                    videos.push(state.videos[video_uid]);
-                    videos.sort((a, b) => a.published - b.published);
-                }
-            }
-
-            channels.sort((a, b) => {
-                if (!a.videos[0] || !b.videos[0]) return;
-                return a.videos[0].published - b.videos[0].published
-            });
-
-            return channels.filter((c) => c.videos.length);
+        videosForChannel: (state) => {
+            return (channel_uid) => {
+                return state.videos.filter((v) => {
+                    v.channels.includes(channel_uid);
+                });
+            };
         },
     },
 };

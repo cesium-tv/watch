@@ -1,36 +1,26 @@
 <template>
-    <grid
-        :categories="channels"
-    ></grid>
+    <Grid
+        :items="channels"
+        :sub-items-name="'videos'"
+        :item-component="videoComponent"
+    ></Grid>
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 import Grid from '@/components/grid/Grid.vue';
 import Video from '@/components/Video.vue';
-import { VIDEO_LIST_COL_WIDTH } from '@/config';
 
 export default {
-    name: 'VideoGrid',
+    name: "VideoList",
 
     components: {
-        Video,
         Grid,
-    },
-
-    props: {
-        width: {
-            type: Number,
-        },
-    },
-
-    data() {
-        return {
-        };
     },
 
     mounted() {
         this.refresh();
+        this.videoComponent = Video;
     },
 
     methods: {
@@ -41,15 +31,11 @@ export default {
 
     computed: {
         ...mapGetters({
-            channels: 'videos/videosByChannel',
+            channels: 'videos/channels',
         }),
-
-        columns() {
-            return Math.ceil(this.width / VIDEO_LIST_COL_WIDTH);
-        },
     },
 };
 </script>
 
-<style>
+<style scoped>
 </style>

@@ -1,17 +1,21 @@
 <template>
   <ion-page>
     <ion-content>
-        <VideoGrid
+        <component
+            v-if="width"
+            :is="is"
             :width="width"
-        ></VideoGrid>
+            :item-component="itemComponent"
+        ></component>
     </ion-content>
   </ion-page>
 </template>
 
 <script>
 import { IonPage, IonContent } from '@ionic/vue';
-//import VideoList from '@/components/VideoList.vue';
+import VideoList from '@/components/VideoList.vue';
 import VideoGrid from '@/components/VideoGrid.vue';
+import Video from '@/components/Video.vue';
 import { VIDEO_LIST_IF_LT } from '@/config';
 
 export default {
@@ -20,23 +24,24 @@ export default {
     components: {
         IonPage,
         IonContent,
-        //VideoList,
+        VideoList,
         VideoGrid,
     },
 
     data() {
         return {
             width: null,
+            itemComponent: Video,
         };
     },
 
-    // computed: {
-    //     is() {
-    //         // Select correct component for screen width
-    //         const is = (this.width <= VIDEO_LIST_IF_LT) ? VideoList : Grid;
-    //         return is;
-    //     },
-    // },
+    computed: {
+        is() {
+            // select component based on screen size.
+            const is = (this.width <= VIDEO_LIST_IF_LT) ? VideoList : VideoGrid;
+            return is;
+        },
+    },
 
     mounted() {
         // Set initial screen width

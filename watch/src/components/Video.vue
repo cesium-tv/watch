@@ -12,17 +12,17 @@
         >
             <img
                 class="poster"
-                :src="data.poster"
-                :alt="data.title"
+                :src="item.poster"
+                :alt="item.title"
             >
         </a>
 
         <ion-card-header>
-            <ion-card-title>{{ data.title }}</ion-card-title>
-            <ion-card-subtitle>{{ channels[data.channels[0]].name }}</ion-card-subtitle>
+            <ion-card-title>{{ item.title }}</ion-card-title>
+            <ion-card-subtitle>{{ item.channel.name }}</ion-card-subtitle>
         </ion-card-header>
 
-        <ion-card-content>{{ data.description }}</ion-card-content>
+        <ion-card-content>{{ item.description }}</ion-card-content>
     </ion-card>
 </template>
 
@@ -42,7 +42,7 @@ export default {
     },
 
     props: {
-        data: {
+        item: {
             type: Object,
             default: null,
         },
