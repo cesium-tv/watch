@@ -1,6 +1,7 @@
 <template>
     <ion-card
-        class="ak-selectable"
+        size="full"
+        class="ek-selectable"
         :data-nav-up="navUp"
         :data-nav-down="navDown"
         :data-nav-right="navRight"
@@ -8,27 +9,37 @@
     >
         <a
             href="#"
-            @click="play(data)"
+            @click="play(item)"
         >
             <img
                 class="poster"
-                :src="item.poster"
+                v-lazy="item.poster"
                 :alt="item.title"
             >
         </a>
 
-        <ion-card-header>
-            <ion-card-title>{{ item.title }}</ion-card-title>
-            <ion-card-subtitle>{{ item.channel.name }}</ion-card-subtitle>
-        </ion-card-header>
+        <div>
+            <ion-card-header>
+                <ion-card-title class="title" color="primary">
+                    {{ item.title }}
+                </ion-card-title>
+                <ion-card-subtitle color="primary">{{ item.channel.name }}</ion-card-subtitle>
+            </ion-card-header>
+        </div>
 
-        <ion-card-content>{{ item.description }}</ion-card-content>
+        <ion-card-content class="content">
+            <ion-text color="medium">
+                <p class="duration">{{ duration }}</p>
+                <p class="published">{{ published }}</p>
+            </ion-text>
+        </ion-card-content>
     </ion-card>
 </template>
 
 <script>
+import moment from 'moment';
 import { mapActions, mapGetters } from 'vuex';
-import { IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent } from '@ionic/vue';
+import { IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonText } from '@ionic/vue';
 
 export default {
     name: 'Video',
@@ -39,6 +50,7 @@ export default {
         IonCardTitle,
         IonCardSubtitle,
         IonCardContent,
+        IonText,
     },
 
     props: {
@@ -64,10 +76,24 @@ export default {
         },
     },
 
+    data() {
+        return {
+            selected: true,
+        };
+    },
+
     computed: {
         ...mapGetters({
             channels: 'videos/channels',
         }),
+
+        published() {
+            return moment(this.item.published).fromNow();
+        },
+
+        duration() {
+            return moment.duration(this.item.duration, 'seconds').humanize();
+        },
     },
 
     methods: {
@@ -80,16 +106,42 @@ export default {
 
 <style scoped>
 .poster {
-    width: 300px !important;
-    height: 200px;
+    width: 100% !important;
+    max-width: 500px;
+    max-height: 240px;
+    object-fit: cover;
 }
 
 ion-card {
     min-width: 320px;
-    max-width: 320px;
+    /*max-height: 320px;*/
+    height: 347px;
 }
 
 .ak-selected {
     background-color: lightblue;
+}
+
+.published {
+    float: left;
+}
+
+.duration {
+    float: right;
+}
+
+.title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.content {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    left: 0px;
 }
 </style>

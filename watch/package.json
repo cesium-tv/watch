@@ -24,11 +24,14 @@
     "capacitor-video-player": "^5.0.2",
     "errokees": "^0.5.1",
     "install": "^0.13.0",
+    "moment": "^2.29.4",
     "npm": "^10.2.1",
     "object.entries": "^1.1.7",
     "qs": "^6.11.2",
     "vue": "^3.3.4",
     "vue-router": "^4.2.5",
+    "vue-virtual-scroller": "^2.0.0-beta.8",
+    "vue3-lazyload": "^0.3.8",
     "vuex": "^4.0.2"
   },
   "devDependencies": {

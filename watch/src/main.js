@@ -1,5 +1,7 @@
 import { IonicVue } from '@ionic/vue';
 import { createApp } from 'vue'
+import VueLazyLoad from 'vue3-lazyload'
+import { RecycleScroller } from 'vue-virtual-scroller';
 import App from './App.vue'
 import router from '@/router'
 import store from '@/store';
@@ -20,6 +22,11 @@ import '@ionic/vue/css/text-alignment.css';
 import '@ionic/vue/css/text-transformation.css';
 import '@ionic/vue/css/flex-utils.css';
 import '@ionic/vue/css/display.css';
+
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
+
+/* Our theme */
+import '@/assets/main.css';
 
 /* Polyfills */
 import 'object.entries/auto';
@@ -45,6 +52,8 @@ app.config.globalProperties.$ak = new Errokees({
 app.use(router);
 app.use(store);
 app.use(IonicVue);
+app.use(VueLazyLoad);
+app.component('RecycleScroller', RecycleScroller);
 
 router.isReady().then(() => {
     app.mount('#app');

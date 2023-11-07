@@ -34,6 +34,10 @@ copy-electron: build
 run-android: copy-android
 	ANDROID_SDK_ROOT=${ANDROID_HOME}/Sdk npx cap run android
 
+.PHONY: build-webos
+build-webos:
+	${MAKE} -C webos build
+
 .PHONY: build-android
 build-android: copy-android
 # Build
@@ -64,6 +68,7 @@ run:
 
 clean:
 	rm -rf dest/ installers/
+	${MAKE} -C webos clean
 
 assets:
 	npx @capacitor/assets generate --iconBackgroundColor #9bb3d5 --iconBackgroundColorDark #252a33 --splashBackgroundColor #9bb3d5 --splashBackgroundColorDark #252a33

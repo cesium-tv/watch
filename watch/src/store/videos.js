@@ -130,7 +130,7 @@ export default {
         videosForChannel: (state) => {
             return (channel_uid) => {
                 return state.videos.filter((v) => {
-                    v.channels.includes(channel_uid);
+                    return v.channels.includes(channel_uid);
                 });
             };
         },

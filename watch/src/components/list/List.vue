@@ -18,6 +18,7 @@
 </template>
 
 <script>
+// TODO: use RecycleScroller
 import Video from '@/components/Video.vue';
 
 export default {
@@ -38,7 +39,12 @@ export default {
 </script>
 
 <style scoped>
-list {
+#list {
+    /*display: flex;*/
+    position: absolute;
+    top: 82px;
+    bottom: 0;
+    overflow-x: hidden;
 }
 
 .row {

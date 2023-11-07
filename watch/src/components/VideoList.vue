@@ -1,7 +1,8 @@
 <template>
     <div>
         <Swipe
-            :items="channels"
+            :items="doubleChannels"
+            selected-attr="uid"
             :item-component="channelComponent"
             v-model="currentChannel"
         ></Swipe>
@@ -16,7 +17,7 @@
 import { mapActions, mapGetters } from 'vuex';
 import Swipe from '@/components/Swipe.vue';
 import List from '@/components/list/List.vue';
-import Channel from '@/components/Channel.vue';
+import Avatar from '@/components/Avatar.vue';
 import Video from '@/components/Video.vue';
 import { VIDEO_LIST_COL_WIDTH } from '@/config';
 
@@ -26,7 +27,7 @@ export default {
     components: {
         Swipe,
         List,
-        Channel,
+        Avatar,
         Video,
     },
 
@@ -45,7 +46,7 @@ export default {
 
     mounted() {
         this.refresh();
-        this.channelComponent = Channel;
+        this.channelComponent = Avatar;
         this.videoComponent = Video;
     },
 
@@ -61,6 +62,13 @@ export default {
             videosByPublishedTime: 'videos/videosByPublishedTime',
             videosForChannel: 'videos/videosForChannel',
         }),
+
+        doubleChannels() {
+            var double = [];
+            double.push(...this.channels);
+            double.push(...this.channels);
+            return double;
+        },
 
         videos() {
             if (!this.currentChannel) {
@@ -93,7 +101,6 @@ export default {
             return rows;
         },
     },
-
 };
 </script>
 

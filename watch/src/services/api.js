@@ -7,7 +7,7 @@ const api = axios.create({
 });
 
 function isNetworkError(error) {
-    return error.code === 'ECONNABORTED';
+    return ['ECONNABORTED', 'ERR_NETWORK'].includes(error.code);
 }
 
 api.interceptors.request.use(

@@ -10,17 +10,16 @@
 import { CapacitorVideoPlayer } from 'capacitor-video-player';
 import { mapGetters, mapActions } from 'vuex';
 import { platform } from '@/services/platform.js';
-import { all } from 'axios';
 
 const CAP_VIDEO_PLAYER_ID = 'fullscreen';
 const CAP_VIDEO_TIME_INTERVAL = 3000;
 
 async function callVideoPlayer(methodName, options) {
-    console.log('callVideoPlayer:', methodName, options);
+    console.debug('callVideoPlayer:', methodName, options);
     const r = await CapacitorVideoPlayer[methodName](options);
-    console.log(r);
 
     if (!r.result) {
+        console.error(r);
         throw new Error(r.message);
     }
 
@@ -69,7 +68,7 @@ export default {
                 mode: playerMode,
                 displayMode: 'all',
                 playerId: CAP_VIDEO_PLAYER_ID,
-                //componentTag: 'div',
+                componentTag: 'div',
                 chromecast: false,
                 width: '100%',
                 height: '100%',
@@ -104,6 +103,7 @@ export default {
                 await callVideoPlayer('stopAllPlayers');
                 // NOTE: This apparently does nothing
                 await callVideoPlayer('exitPlayer', { playerId: this.playerOptions.playerId });
+
             } catch (e) {
                 console.error('Error closing player, cleaning up');
                 console.error(e);
@@ -121,7 +121,6 @@ export default {
             const dimensions = Object.keys(sources).sort();
             const source = sources[dimensions[0]];
 
-            console.log('playing:', source);
             const options = {
                 ...this.playerOptions,
                 url: source.url,
@@ -130,6 +129,7 @@ export default {
 
             try {
                 await callVideoPlayer('initPlayer', options);
+
             } catch (e) {
                 console.error('Error attempting to initialize player');
                 consold.error(e);
@@ -153,6 +153,7 @@ export default {
         async pause() {
             try {
                 await callVideoPlayer('pause', { playerId: this.playerOptions.playerId });
+
             } catch (e) {
                 console.error('Error attempting to pause video');
                 console.error(e);
@@ -162,6 +163,7 @@ export default {
         async resume() {
             try {
                 await callVideoPlayer('play', { playerId: this.playerOptions.playerId });
+
             } catch (e) {
                 console.error('Error attempting to resume video');
                 console.error(e);
@@ -173,7 +175,7 @@ export default {
         },
 
         onPlayerPlay() {
-            console.log('Starting playback monitor');
+            console.debug('Starting playback monitor');
             const h = setInterval(async () => {
                 let r;
 
@@ -181,7 +183,7 @@ export default {
                 this.isPlaying = r.value;
 
                 if (!this.isPlaying) {
-                    console.log('Stopping playback monitor')
+                    console.debug('Stopping playback monitor')
                     clearInterval(h);
                     return;
                 }
@@ -192,10 +194,10 @@ export default {
         },
 
         onPlayerExit() {
-            console.log('Player exited...');
+            console.debug('Player exited...');
             this.close()
                 .then(() => {
-                    console.log('Player exited, closed');
+                    console.debug('Player exited, closed');
                 })
                 .catch(e => console.error);
         },
@@ -209,22 +211,22 @@ export default {
                 (document.msFullscreenElement && document.msFullscreenElement !== null);
             if (!isInFullScreen) {
                 // Exiting Fullscreen mode
-                console.log('Exited fullscreen');
+                console.debug('Exited fullscreen');
                 this.close()
                     .then(() => {
-                        console.log('Exited fullscreen, stopped video');
+                        console.debug('Exited fullscreen, stopped video');
                     })
                     .catch(e => console.error);
             } else {
-                console.log('Entering fullscreen mode');
+                console.debug('Entering fullscreen mode');
             }
         },
 
         onBackButton() {
-            console.log('Back button pressed');
+            console.debug('Back button pressed');
             this.close()
                 .then(() => {
-                    console.log('Back button pressed, stopped video');
+                    console.debug('Back button pressed, stopped video');
                 })
                 .catch(e => console.error);
         },

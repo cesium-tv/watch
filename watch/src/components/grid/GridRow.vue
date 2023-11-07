@@ -16,6 +16,7 @@
 </template>
 
 <script>
+// TODO: use RecycleScroller
 import Video from '@/components/Video.vue';
 
 export default {
