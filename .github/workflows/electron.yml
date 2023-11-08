@@ -15,8 +15,8 @@ jobs:
         with:
           ref: master
 
-      - name: Install hub
-        run: sudo apt install -y hub
+      - name: Install wine
+        run: sudo apt install -y wine32 wine64
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -35,21 +35,7 @@ jobs:
       - name: build app
         run: make package-electron
         env:
-          GH_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Check folder content of electron output
         run: ls ./electron/dist
-
-      - name: Set Tag
-        id: current-datetime
-        run: echo "CURRENT_DATETIME=$(date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
-
-      - name: Build Release
-        shell: bash
-        run: |
-          hub release create ${{ steps.current-datetime.outputs.CURRENT_DATETIME }} \
-          -m ${{ steps.current-datetime.outputs.CURRENT_DATETIME }} \
-          -a ./electron/dist/Cesium.TV-*-setup.exe \
-          -a ./electron/dist/Cesium.TV-*.AppImage
-        env:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}

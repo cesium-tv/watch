@@ -14,6 +14,7 @@
   "main": "build/src/index.js",
   "scripts": {
     "build": "tsc && electron-rebuild",
+    "release": "electron-builder",
     "electron:start-live": "node ./live-runner.js",
     "electron:start": "electron --inspect=5858 ./",
     "electron:pack:AppImage": "electron-builder build --dir -c ./electron-builder.config.json -l AppImage",
