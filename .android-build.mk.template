@@ -1,0 +1,8 @@
+STORE_PATH=${ANDROID_HOME}/Keys/Store
+ALIAS_NAME=Development
+# Uncomment to define these.
+STORE_PASS=
+ALIAS_PASS=
+
+ALIAS_NAME := $(if $(ALIAS_NAME),$(ALIAS_NAME),$(shell bash -c 'read -p "Alias name: " pwd; echo $$pwd'))
+ALIAS_PASS := $(if $(ALIAS_PASS),$(ALIAS_PASS),$(shell bash -c 'read -s -p "Alias password: " pwd; echo $$pwd'))
