@@ -35,6 +35,9 @@ jobs:
       - name: build app
         run: make build-electron
 
+      - name: Check folder content of electron output
+        run: ls ./electron/dist
+
       - name: Set Tag
         id: current-datetime
         run: echo "CURRENT_DATETIME=$(date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
