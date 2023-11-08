@@ -83,6 +83,10 @@ publish-electron-linux: build-electron
 publish-electron-win: build-electron
 	${MAKE} -C electron publish-win
 
+.PHONY: release
+release:
+	npm version patch
+
 run:
 	npm run dev
 
