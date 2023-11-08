@@ -36,7 +36,7 @@ jobs:
         run: make build-electron
 
       - name: Check folder content of electron output
-        run: ls ./electron/dist
+        run: pwd && find .
 
       - name: Set Tag
         id: current-datetime
