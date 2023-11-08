@@ -21,7 +21,8 @@
   },
   "win": {
     "target": "nsis",
-    "icon": "assets/appIcon.ico"
+    "icon": "assets/appIcon.ico",
+    "artifactName": "${productName}-${version}-setup.${ext}"
   },
   "mac": {
     "category": "public.app-category.video",
