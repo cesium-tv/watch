@@ -26,6 +26,12 @@ jobs:
       - name: install dependencies
         run: npm ci
 
+      - name: install electron
+        run: |
+          pushd electron
+          npm i
+          popd
+
       - name: build app
         run: make build-electron
 
