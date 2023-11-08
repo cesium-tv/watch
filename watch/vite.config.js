@@ -1,12 +1,19 @@
 import { fileURLToPath, URL } from 'node:url'
-import browserslistToEsbuild from 'browserslist-to-esbuild'
 import { defineConfig } from 'vite'
+import legacy from '@vitejs/plugin-legacy';
 import vue from '@vitejs/plugin-vue'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: './',
   plugins: [
     vue(),
+    legacy({
+      targets: ['chrome >= 53'],
+      ignoreBrowserslistConfig: false,
+      renderLegacyChunks: true,
+      modernPolyfills: ['es/global-this'],
+    }),
   ],
   resolve: {
     alias: {
@@ -14,7 +21,10 @@ export default defineConfig({
     }
   },
   build: {
+    //target: 'es2015',
     outDir: 'dist/vite',
-    target: browserslistToEsbuild(),
+  },
+  server: {
+    host: '0.0.0.0'
   }
 })

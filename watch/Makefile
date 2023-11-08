@@ -1,3 +1,6 @@
+DOCKER = docker
+DOCKER_COMPOSE = docker compose -p cesium-watch
+
 ANDROID_HOME=${HOME}/Android
 
 ifeq ($(MAKECMDGOALS),build-android)
@@ -46,6 +49,10 @@ build-android: copy-android
 .PHONY: build-electron
 build-electron: copy-electron
 	${MAKE} -C electron build
+
+.PHONY: build-docker
+build-docker:
+	${DOCKER} build . -f docker/watch/Dockerfile --target=prod -t cesium-watch
 
 .PHONY: run-electron
 run-electron: build-electron

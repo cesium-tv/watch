@@ -68,7 +68,7 @@ async function copyAssets() {
     await copy('-fR assets/* app/');
 }
 
-function writeIndex(baseUrl = 'http://watch.cesium.tv:8002/') {
+function writeIndex(baseUrl = 'http://watch.cesium.tv:8008/') {
     console.log('Writing index.html');
 
     const promise = new Promise((resolve, reject) => {
