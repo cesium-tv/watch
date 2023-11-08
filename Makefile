@@ -1,5 +1,6 @@
 DOCKER = docker
 DOCKER_COMPOSE = docker compose -p cesium-watch
+DOCKER_TAG ?= :latest
 
 ANDROID_HOME=${HOME}/Android
 
@@ -51,8 +52,8 @@ build-electron: copy-electron
 	${MAKE} -C electron build
 
 .PHONY: build-docker
-build-docker:
-	${DOCKER} build . -f docker/watch/Dockerfile --target=prod -t cesium-watch
+build-docker: build
+	${DOCKER} build . -f docker/watch/Dockerfile -t cesium-watch${DOCKER_TAG}
 
 .PHONY: run-electron
 run-electron: build-electron
