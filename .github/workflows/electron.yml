@@ -34,6 +34,8 @@ jobs:
 
       - name: build app
         run: make package-electron
+        env:
+          GH_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Check folder content of electron output
         run: ls ./electron/dist
