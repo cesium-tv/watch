@@ -1,0 +1,44 @@
+name: Build Electrion
+run-name: Creating Production Ready Electron App 🚀
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build Electron
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+        with:
+          ref: master
+
+      - name: Install hub
+        run: sudo apt install -y hub
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 19.x
+
+      - name: install dependencies
+        run: npm ci
+
+      - name: build app
+        run: make build-electron
+
+      - name: Set Tag
+        id: current-datetime
+        run: echo "CURRENT_DATETIME=$(date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+
+      - name: Build Release
+        shell: bash
+        run: |
+          hub release create ${{ steps.current-datetime.outputs.CURRENT_DATETIME }} \
+          -m ${{ steps.current-datetime.outputs.CURRENT_DATETIME }} \
+          -a ./electron/dist/Cesium.TV Setup *.exe \
+          -a ./electron/dist/Cesium.TV-*.AppImage
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
