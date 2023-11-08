@@ -75,6 +75,7 @@ run:
 
 clean:
 	rm -rf dest/ installers/
+	${MAKE} -C electron clean
 	${MAKE} -C webos clean
 
 assets:

@@ -12,3 +12,8 @@ package-win:
 
 .PHONY: package
 package: package-linux package-win
+
+.PHONY: clean
+clean:
+	rm -rf dist
+
