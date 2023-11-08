@@ -44,7 +44,7 @@ jobs:
         run: |
           hub release create ${{ steps.current-datetime.outputs.CURRENT_DATETIME }} \
           -m ${{ steps.current-datetime.outputs.CURRENT_DATETIME }} \
-          -a ./electron/dist/Cesium.TV Setup *.exe \
+          -a ./electron/dist/Cesium.TV\ Setup\ *.exe \
           -a ./electron/dist/Cesium.TV-*.AppImage
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
