@@ -19,6 +19,8 @@
     "electron:start": "electron --inspect=5858 ./",
     "electron:pack:AppImage": "electron-builder build --dir -c ./electron-builder.config.json -l AppImage",
     "electron:pack:nsis": "electron-builder build --dir -c ./electron-builder.config.json -w nsis",
+    "electron:publish:AppImage": "electron-builder build --dir -c ./electron-builder.config.json -l AppImage --publish always",
+    "electron:publish:nsis": "electron-builder build --dir -c ./electron-builder.config.json -w nsis --publish always",
     "electron:make": "electron-builder build -c ./electron-builder.config.json -p always"
   },
   "dependencies": {
