@@ -16,7 +16,7 @@ jobs:
           ref: master
 
       - name: Install wine
-        run: sudo apt install -y wine32 wine64
+        run: sudo apt install -y wine64
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
