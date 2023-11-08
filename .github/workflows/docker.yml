@@ -25,11 +25,11 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: build and push api
+      - name: build and push watch
         run: |
-          docker build -f docker/api/Dockerfile \
-            --tag ${{ secrets.DOCKER_ORG }}/api:latest \
-            --tag ${{ secrets.DOCKER_ORG }}/api:${{env.tag}} \
+          docker build -f docker/watch/Dockerfile \
+            --tag ${{ secrets.DOCKER_ORG }}/watch:latest \
+            --tag ${{ secrets.DOCKER_ORG }}/watch:${{env.tag}} \
             .
-          docker push ${{ secrets.DOCKER_ORG }}/api:latest
-          docker push ${{ secrets.DOCKER_ORG }}/api:${{env.tag}}
+          docker push ${{ secrets.DOCKER_ORG }}/watch:latest
+          docker push ${{ secrets.DOCKER_ORG }}/watch:${{env.tag}}
