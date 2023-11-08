@@ -1,9 +1,11 @@
-name: Build Electrion
+name: Build Electron
 run-name: Creating Production Ready Electron App 🚀
 on:
   push:
     branches:
       - master
+    tags:
+      - v*
 
 jobs:
   build:

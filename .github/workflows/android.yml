@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+    tags:
+      - v*
 
 jobs:
   build:
@@ -49,16 +51,16 @@ jobs:
       - name: Check folder content of android output
         run: ls ./android/app/build/outputs/bundle/release
 
-      - name: Set Tag
-        id: current-datetime
-        run: echo "CURRENT_DATETIME=$(date +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
 
-      - name: Build Release
-        shell: bash
-        run: |
-          hub release create ${{ steps.current-datetime.outputs.CURRENT_DATETIME }} \
-          -m ${{ steps.current-datetime.outputs.CURRENT_DATETIME }} \
-          -a ./android/app/build/outputs/bundle/release/app-release-signed.aab \
-          -a ./android/app/build/outputs/apk/debug/app-debug.apk
+      - name: publish release
+        uses: xresloader/upload-to-github-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        with:
+          file: "./android/app/build/outputs/bundle/release/app-release-signed.aab;./android/app/build/outputs/apk/debug/app-debug.apk"
+          tags: true
+          draft: false
+          default_release_name: ${{ steps.package-version.outputs.current-version }}
