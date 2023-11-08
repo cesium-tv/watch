@@ -33,10 +33,10 @@ jobs:
           popd
 
       - name: build app
-        run: make build-electron
+        run: make package-electron
 
       - name: Check folder content of electron output
-        run: pwd && find .
+        run: ls ./electron/dist
 
       - name: Set Tag
         id: current-datetime
