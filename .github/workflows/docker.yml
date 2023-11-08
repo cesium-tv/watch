@@ -25,6 +25,9 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: build app
+        run: make build
+
       - name: build and push watch
         run: |
           docker build -f docker/watch/Dockerfile \
