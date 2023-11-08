@@ -70,6 +70,18 @@ package-electron-linux: build-electron
 package-electron-win: build-electron
 	${MAKE} -C electron package-win
 
+.PHONY: publish-electron
+publish-electron: build-electron
+	${MAKE} -C electron publish
+
+.PHONY: publish-electron-linux
+publish-electron-linux: build-electron
+	${MAKE} -C electron publish-linux
+
+.PHONY: publish-electron-win
+publish-electron-win: build-electron
+	${MAKE} -C electron publish-win
+
 run:
 	npm run dev
 
