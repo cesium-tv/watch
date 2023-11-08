@@ -15,6 +15,9 @@ jobs:
         with:
           ref: master
 
+      - name: Install hub
+        run: sudo apt install -y hub
+
       - name: Setup java
         uses: actions/setup-java@v3
         with:
