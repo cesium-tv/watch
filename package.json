@@ -9,7 +9,7 @@
     "test:unit": "vitest",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
     "format": "prettier --write src/",
-    "version": "cd electron && npm version $npm_package_version",
+    "version": "cd electron && npm version $npm_package_version && git commit package.json package-lock.json",
     "postversion": "git push && git push --tags"
   },
   "dependencies": {
